@@ -32,6 +32,15 @@
 #ifndef RCC_H
 #define RCC_H
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#include <Mib/BuildSystem/BuildSystemDependency>
+#include <QtCore/QString>
+
+extern NMib::NBuildSystem::CMalterlibDependencyTracker g_Tracker;
+CStr fg_MalterlibStrFromQt(QString const &_Str);
+#endif
+
 #include <qstringlist.h>
 #include <qhash.h>
 #include <qstring.h>

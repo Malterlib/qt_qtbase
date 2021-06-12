@@ -335,7 +335,7 @@ void CppGenerator::operator () ()
 
   if (! grammar.merged_output.isEmpty())
     {
-      QFile f(grammar.merged_output);
+      QFile f(output_dir + "/" + grammar.merged_output);
       if (! f.open (QFile::WriteOnly))
         {
           fprintf (stderr, "*** cannot create %s\n", qPrintable(grammar.merged_output));
@@ -378,7 +378,7 @@ void CppGenerator::operator () ()
   QString bitsFileName = grammar.table_name.toLower () + QLatin1String(".cpp");
 
   { // decls...
-    QFile f (declFileName);
+    QFile f (output_dir + "/" + declFileName);
     f.open (QFile::WriteOnly);
     QTextStream out (&f);
 
@@ -410,7 +410,7 @@ void CppGenerator::operator () ()
   } // end decls
 
   { // bits...
-    QFile f (bitsFileName);
+    QFile f (output_dir + "/" + bitsFileName);
     f.open (QFile::WriteOnly);
     QTextStream out (&f);
 
@@ -431,7 +431,7 @@ void CppGenerator::operator () ()
 
   if (! grammar.decl_file_name.isEmpty ())
     {
-      QFile f (grammar.decl_file_name);
+      QFile f (output_dir + "/" + grammar.decl_file_name);
       f.open (QFile::WriteOnly);
       QTextStream out (&f);
       out << p.decls();
@@ -439,7 +439,7 @@ void CppGenerator::operator () ()
 
   if (! grammar.impl_file_name.isEmpty ())
     {
-      QFile f (grammar.impl_file_name);
+      QFile f (output_dir + "/" + grammar.impl_file_name);
       f.open (QFile::WriteOnly);
       QTextStream out (&f);
       out << p.impls();
