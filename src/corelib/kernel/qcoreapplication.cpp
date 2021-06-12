@@ -1706,6 +1706,19 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     return false;
 }
 
+void QCoreApplication::compressEventInto(QEvent* _pDest, QEvent* _pSrc)
+{
+	(void)_pDest;
+	(void)_pSrc;
+}
+
+void QCoreApplication::notifyPostedEventRemoved(QObject* receiver, QEvent* event, QPostEventList *postedEvents)
+{
+	(void)receiver;
+	(void)event;
+	(void)postedEvents;
+}
+
 /*!
   Immediately dispatches all events which have been previously queued
   with QCoreApplication::postEvent() and which are for the object \a
@@ -1931,6 +1944,10 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
             pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
             pe.event->m_posted = false;
             events.append(pe.event);
+
+            if (qApp)
+                qApp->notifyPostedEventRemoved(pe.receiver, pe.event, &data->postEventList);
+
             const_cast<QPostEvent &>(pe).event = nullptr;
         } else if (!data->postEventList.recursion) {
             if (i != j)
@@ -1990,6 +2007,10 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
                      pe.receiver->objectName().toLocal8Bit().data());
 #endif
             pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
+
+            if (qApp)
+                qApp->notifyPostedEventRemoved(pe.receiver, pe.event, &data->postEventList);
+
             pe.event->m_posted = false;
             delete pe.event;
             const_cast<QPostEvent &>(pe).event = nullptr;
