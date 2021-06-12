@@ -5,6 +5,7 @@
 #include <qcommandlineparser.h>
 #include <qcoreapplication.h>
 #include <qdebug.h>
+#include <qdir.h>
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qloggingcategory.h>
@@ -1216,6 +1217,10 @@ int QDBusXmlToCpp::run(const QCoreApplication &app)
                 u"Be verbose."_s);
     parser.addOption(verboseOption);
 
+    QCommandLineOption currentDirectoryOption(QStringList() << QStringLiteral("C") << QStringLiteral("outputfilepath"),
+                QStringLiteral("Set current directory to parent path of <file>"), QStringLiteral("file"));
+    parser.addOption(currentDirectoryOption);
+
     parser.process(app);
 
     QString adaptorFile = parser.value(adapterCodeOption);
@@ -1227,6 +1232,10 @@ int QDBusXmlToCpp::run(const QCoreApplication &app)
     skipNamespaces = parser.isSet(noNamespaceOption);
     QString proxyFile = parser.value(proxyCodeOption);
     bool verbose = parser.isSet(verboseOption);
+
+    auto currentDirectory = parser.value(currentDirectoryOption);
+    if (!currentDirectory.isEmpty())
+        QDir::setCurrent(QFileInfo(currentDirectory).dir().absolutePath());
 
     wantedInterfaces = parser.positionalArguments();
     if (!wantedInterfaces.isEmpty()) {

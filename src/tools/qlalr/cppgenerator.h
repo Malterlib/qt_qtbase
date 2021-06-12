@@ -14,11 +14,12 @@ class Recognizer;
 class CppGenerator
 {
 public:
-  CppGenerator(const Recognizer &p, Grammar &grammar, Automaton &aut, bool verbose):
+  CppGenerator(const Recognizer &p, Grammar &grammar, Automaton &aut, bool verbose, QString const &output_dir):
     p (p),
     grammar (grammar),
     aut (aut),
     verbose (verbose),
+    output_dir (output_dir),
     debug_info (false),
     copyright (false),
     warnings_are_errors(false) {}
@@ -48,6 +49,7 @@ private:
   Grammar &grammar;
   Automaton &aut;
   bool verbose;
+  QString const output_dir;
   int accept_state;
   int state_count;
   int terminal_count;
