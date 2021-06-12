@@ -3,6 +3,8 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
+// Dummy
+
 #ifndef QT_NO_TABLETEVENT
 
 #include <QtGui/qpointingdevice.h>
