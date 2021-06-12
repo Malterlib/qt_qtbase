@@ -35,8 +35,8 @@
   /*************************************************************************/
 
 
-#ifndef __FTCONFIG_H__
-#define __FTCONFIG_H__
+#ifndef FTCONFIG_H_
+#define FTCONFIG_H_
 
 #include <ft2build.h>
 #include FT_CONFIG_OPTIONS_H

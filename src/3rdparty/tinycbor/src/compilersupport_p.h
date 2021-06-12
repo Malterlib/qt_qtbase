@@ -181,12 +181,20 @@
 #endif
 #  define unreachable() __builtin_unreachable()
 #elif defined(_MSC_VER)
+#ifndef unlikely
 #  define likely(x)     (x)
+#endif
+#ifndef unlikely
 #  define unlikely(x)   (x)
+#endif
 #  define unreachable() __assume(0)
 #else
+#ifndef unlikely
 #  define likely(x)     (x)
+#endif
+#ifndef unlikely
 #  define unlikely(x)   (x)
+#endif
 #  define unreachable() do {} while (0)
 #endif
 

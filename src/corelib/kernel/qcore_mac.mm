@@ -255,12 +255,19 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAutoReleasePoolTracker);
 
 QT_BEGIN_NAMESPACE
 
+#ifdef DMalterlibNontrackedFree
+extern "C"
+{
+    void nontracked_free(void *__ptr);
+}
+#endif
+
 QMacAutoReleasePool::QMacAutoReleasePool()
     : pool([[NSAutoreleasePool alloc] init])
 {
     Class trackerClass = [QMacAutoReleasePoolTracker class];
 
-#ifdef QT_DEBUG
+#if defined(QT_DEBUG) && 0 // Disable, this is too slow
     void *poolFrame = nullptr;
     if (__builtin_available(macOS 10.14, iOS 12.0, tvOS 12.0, watchOS 5.0, *)) {
         void *frame;
@@ -294,7 +301,13 @@ QMacAutoReleasePool::QMacAutoReleasePool()
             free(className);
 
             if (symbolName != info.dli_sname)
+            {
+#ifdef DMalterlibNontrackedFree
+                nontracked_free((char*)symbolName);
+#else
                 free((char*)symbolName);
+#endif
+            }
         }
     }
 #endif

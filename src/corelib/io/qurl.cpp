@@ -474,36 +474,38 @@ public:
     enum ErrorCode {
         // the high byte of the error code matches the Section
         // the first item in each value must be the generic "Invalid xxx Error"
-        InvalidSchemeError = Scheme << 8,
+        InvalidSchemeError = uint32_t(Scheme) << 8,
 
-        InvalidUserNameError = UserName << 8,
+        InvalidUserNameError = uint32_t(UserName) << 8,
 
-        InvalidPasswordError = Password << 8,
+        InvalidPasswordError = uint32_t(Password) << 8,
 
-        InvalidRegNameError = Host << 8,
+        InvalidRegNameError = uint32_t(Host) << 8,
         InvalidIPv4AddressError,
         InvalidIPv6AddressError,
         InvalidCharacterInIPv6Error,
         InvalidIPvFutureError,
         HostMissingEndBracket,
 
-        InvalidPortError = Port << 8,
+        InvalidPortError = uint32_t(Port) << 8,
         PortEmptyError,
 
-        InvalidPathError = Path << 8,
+        InvalidPathError = uint32_t(Path) << 8,
 
-        InvalidQueryError = Query << 8,
+        InvalidQueryError = uint32_t(Query) << 8,
 
-        InvalidFragmentError = Fragment << 8,
+        InvalidFragmentError = uint32_t(Fragment) << 8,
 
         // the following three cases are only possible in combination with
         // presence/absence of the path, authority and scheme. See validityError().
-        AuthorityPresentAndPathIsRelative = Authority << 8 | Path << 8 | 0x10000,
+        AuthorityPresentAndPathIsRelative = uint32_t(Authority) << 8 | uint32_t(Path) << 8 | 0x10000,
         AuthorityAbsentAndPathIsDoubleSlash,
-        RelativeUrlPathContainsColonBeforeSlash = Scheme << 8 | Authority << 8 | Path << 8 | 0x10000,
+        RelativeUrlPathContainsColonBeforeSlash = uint32_t(Scheme) << 8 | uint32_t(Authority) << 8 | uint32_t(Path) << 8 | 0x10000,
 
         NoError = 0
     };
+
+	static_assert(InvalidSchemeError != 0);
 
     struct Error {
         QString source;

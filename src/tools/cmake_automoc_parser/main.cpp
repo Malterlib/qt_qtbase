@@ -30,6 +30,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstdlib>
 
 #include <qcommandlineoption.h>
 #include <qcommandlineparser.h>
