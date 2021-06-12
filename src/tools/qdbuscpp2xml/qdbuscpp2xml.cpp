@@ -26,6 +26,8 @@
 **
 ****************************************************************************/
 
+#include "moc.h"
+
 #include <qbuffer.h>
 #include <qbytearray.h>
 #include <qdebug.h>
@@ -54,7 +56,6 @@ static const char docTypeHeader[] =
 #include <private/qdbusmetatype_p.h>
 #include <private/qdbusutil_p.h>
 
-#include "moc.h"
 #include "generator.h"
 #include "preprocessor.h"
 

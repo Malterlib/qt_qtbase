@@ -29,6 +29,15 @@
 #ifndef MOC_H
 #define MOC_H
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#include <Mib/BuildSystem/BuildSystemDependency>
+#include <QtCore/QString>
+
+extern NMib::NBuildSystem::CMalterlibDependencyTracker g_Tracker;
+CStr fg_MalterlibStrFromQt(QString const &_Str);
+#endif
+
 #include "parser.h"
 #include <qstringlist.h>
 #include <qmap.h>

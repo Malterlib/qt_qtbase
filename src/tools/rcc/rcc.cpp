@@ -27,7 +27,20 @@
 **
 ****************************************************************************/
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#include <Mib/BuildSystem/BuildSystemDependency>
+#include <QtCore/QString>
+
+NMib::NBuildSystem::CMalterlibDependencyTracker g_Tracker;
+CStr fg_MalterlibStrFromQt(QString const &_Str)
+{
+    return CWStr((ch16 const*)_Str.constData());
+}
+#endif
+
 #include "rcc.h"
+#include <iostream>
 
 #include <qbytearray.h>
 #include <qdatetime.h>
@@ -263,6 +276,10 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
         *errorMessage = msgOpenReadFailed(m_fileInfo.absoluteFilePath(), file.errorString());
         return 0;
     }
+#ifdef DMalterlibQtFeatures
+	g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(m_fileInfo.absoluteFilePath()));
+#endif
+
     QByteArray data = file.readAll();
 
     // Check if compression is useful for this file
@@ -641,6 +658,9 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
 
                     QStringList filePaths;
                     QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
+#ifdef DMalterlibQtFeatures
+					TCVector<CStr> FoundFiles;
+#endif
                     while (it.hasNext()) {
                         it.next();
                         if (it.fileName() == QLatin1String(".")
@@ -654,6 +674,12 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
 
                     for (const QString &filePath : filePaths) {
                         QFileInfo child(filePath);
+#ifdef DMalterlibQtFeatures
+                        auto AbsolutePath = fg_MalterlibStrFromQt(child.absoluteFilePath());
+                        FoundFiles.f_Insert(AbsolutePath);
+
+                        g_Tracker.f_AddInputFile(AbsolutePath);
+#endif
                         const bool arc =
                                 addFile(alias + child.fileName(),
                                         RCCFileInfo(child.fileName(), child, language, country,
@@ -664,7 +690,13 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         if (!arc)
                             m_failedResources.push_back(child.fileName());
                     }
+#ifdef DMalterlibQtFeatures
+					g_Tracker.f_AddFind(fg_MalterlibStrFromQt(QFileInfo(dir.path()).absoluteFilePath()), true, true, EFileAttrib_File | EFileAttrib_Directory, FoundFiles);
+#endif
                 } else if (listMode || file.isFile()) {
+#ifdef DMalterlibQtFeatures
+					g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(absFileName));
+#endif
                     const bool arc =
                         addFile(alias,
                                 RCCFileInfo(alias.section(slash, -1),

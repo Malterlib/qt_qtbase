@@ -27,6 +27,15 @@
 **
 ****************************************************************************/
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#include <Mib/BuildSystem/BuildSystemDependency>
+#include <QtCore/QString>
+
+extern NMib::NBuildSystem::CMalterlibDependencyTracker g_Tracker;
+CStr fg_MalterlibStrFromQt(QString const &_Str);
+#endif
+
 #include "preprocessor.h"
 #include "utils.h"
 #include <qstringlist.h>
@@ -1038,7 +1047,14 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
     }
 
     if (!fi.exists() || fi.isDir())
+    {
         return QByteArray();
+    }
+
+#ifdef DMalterlibQtFeatures
+    g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(fi.absoluteFilePath()));
+#endif
+
     return fi.canonicalFilePath().toLocal8Bit();
 }
 
