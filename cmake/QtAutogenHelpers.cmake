@@ -91,7 +91,6 @@ function(qt_manual_moc result)
             "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" outfile)
         list(APPEND moc_files "${outfile}")
 
-        set(moc_parameters_file "${outfile}_parameters$<$<BOOL:$<CONFIGURATION>>:_$<CONFIGURATION>>")
         set(moc_parameters ${arg_FLAGS} -o "${outfile}" "${infile}")
 
         foreach(dir IN ITEMS ${arg_INCLUDE_DIRECTORIES})
@@ -113,6 +112,9 @@ function(qt_manual_moc result)
             set(metatypes_byproducts "${outfile}.json")
         endif()
 
+
+        get_filename_component(outfile_directory ${outfile}/.. ABSOLUTE)
+
         if (TARGET Qt::Platform)
            get_target_property(_abi_tag Qt::Platform qt_libcpp_abi_tag)
            if (_abi_tag)
@@ -120,12 +122,8 @@ function(qt_manual_moc result)
            endif()
         endif()
 
-        string (REPLACE ";" "\n" moc_parameters "${moc_parameters}")
-
-        file(GENERATE OUTPUT "${moc_parameters_file}" CONTENT "${moc_parameters}\n")
-
-        add_custom_command(OUTPUT "${outfile}" ${metatypes_byproducts}
-                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc "@${moc_parameters_file}"
+        add_custom_command(OUTPUT "${outfile}" ${metatypes_byproducts} "/DIR:${outfile_directory}"
+                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc ${moc_parameters}
                            DEPENDS "${infile}" ${moc_depends} ${QT_CMAKE_EXPORT_NAMESPACE}::moc
                            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" VERBATIM)
     endforeach()

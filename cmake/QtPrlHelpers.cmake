@@ -291,7 +291,8 @@ function(qt_generate_prl_file target install_dir)
         # For MinGW, qmake doesn't have a lib prefix in prl files.
         set(prefix_for_final_prl_name "")
     else()
-        set(prefix_for_final_prl_name "$<TARGET_FILE_PREFIX:${target}>")
+        #get_target_property(target_prefix ${target} PREFIX)
+        set(prefix_for_final_prl_name "lib")
     endif()
 
     # For frameworks, the prl file should be placed under the Resources subdir.
@@ -326,8 +327,12 @@ function(qt_generate_prl_file target install_dir)
                  "${prl_meta_info_name_prefix}$<CONFIG>${prl_meta_info_name_suffix}")
 
     # The final prl file name that will be embedded in the file above.
-    set(final_prl_file_name "${prefix_for_final_prl_name}$<TARGET_FILE_BASE_NAME:${target}>.prl")
+    get_target_property(target_output_name ${target} OUTPUT_NAME)
+
+    set(final_prl_file_name "${prefix_for_final_prl_name}${target_output_name}.prl")
     qt_path_join(final_prl_file_path "${QT_BUILD_DIR}/${install_dir}" "${final_prl_file_name}")
+
+    get_filename_component(final_prl_file_path ${final_prl_file_path} ABSOLUTE)
 
     # Generate the prl content and its final file name into configuration specific files
     # whose names we know, and can be used in add_custom_command.
@@ -381,6 +386,7 @@ ${prl_step1_content_libs}
                      "${prl_meta_info_name_prefix}${config}${prl_meta_info_name_suffix}")
         add_custom_command(
             OUTPUT  "${prl_step2_path}"
+            BYPRODUCTS ${final_prl_file_path}
             DEPENDS "${prl_step1_path}"
                     "${prl_meta_info_path}"
                     "${QT_CMAKE_DIR}/QtFinishPrlFile.cmake"

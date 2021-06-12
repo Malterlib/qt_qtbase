@@ -77,6 +77,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
     set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 
+    option(BUILD_RESOURCES_IN_LIBS "Include resources in static libs" ON)
+    set(QT_BUILD_RESOURCES_IN_LIBS ${BUILD_RESOURCES_IN_LIBS})
+
     # This variable is also set in Qt6CoreConfigExtras.cmake, but it's not loaded when building
     # qtbase. Set it here so qt_add_plugin can compute the proper plugin flavor.
     set(QT6_IS_SHARED_LIBS_BUILD ${BUILD_SHARED_LIBS})

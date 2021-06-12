@@ -45,7 +45,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
     set(source_file "${file_name}.cpp")
 
     add_custom_command(OUTPUT "${header_file}" "${source_file}"
-                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp ${arg_FLAGS} "${option}"
+                       COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp "-C" "${CMAKE_CURRENT_BINARY_DIR}/${header_file}" ${arg_FLAGS} "${option}"
                                "${header_file}:${source_file}" "${absolute_in_file_path}"
                        DEPENDS "${absolute_in_file_path}" ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"

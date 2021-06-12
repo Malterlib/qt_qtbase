@@ -17,6 +17,7 @@ function(qt_internal_add_resource target resourceName)
    )
 
    if (out_targets)
+        message(STATUS "qt_internal_add_resource out_targets ${out_targets}")
         qt_install(TARGETS ${out_targets}
             EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
             DESTINATION "${INSTALL_LIBDIR}"

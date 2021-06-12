@@ -163,6 +163,7 @@ function(qt_internal_add_docs)
             COMMAND ${qhelpgenerator_bin}
             "${qdoc_output_dir}/${doc_target}.qhp"
             -o "${qch_file_path}"
+            BYPRODUCTS ${qch_file_path}
         )
     endforeach()
     add_dependencies(qch_docs_${target} generate_docs_${target})

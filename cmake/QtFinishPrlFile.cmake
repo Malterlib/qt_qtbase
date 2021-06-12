@@ -88,6 +88,8 @@ file(STRINGS "${IN_META_FILE}" lines)
 foreach(line ${lines})
     if(line MATCHES "^FINAL_PRL_FILE_PATH = (.*)")
         set(final_prl_file_path "${CMAKE_MATCH_1}")
+        string(REPLACE "#(CMakeIntermediateDirectory)" "$ENV{CMakeIntermediateDirectory}" final_prl_file_path "${final_prl_file_path}")
+
         configure_file(
             "${OUT_FILE}"
             "${final_prl_file_path}"

@@ -56,6 +56,8 @@ use English qw(-no_match_vars );
 
 my $normalizePath_fixDrive = ($^O eq "msys" ? 1 : 0);
 
+my $absolutePaths = ($ENV{'QT_SYNC_ABSOLUTE_PATHS'} eq 'true');
+
 ######################################################################
 # Syntax:  normalizePath(\$path)
 # Params:  Reference to a path that's going to be normalized.
@@ -475,10 +477,21 @@ sub cleanupPath {
     return $file;
 }
 
+sub beginsWith {
+    return substr($_[0], 0, length($_[1])) eq $_[1];
+}
+
 sub fixPaths {
     my ($file, $dir) = @_;
 
-    my $out = File::Spec->abs2rel(cleanupPath($file), cleanupPath($dir));
+    my $cleanedUpFile = cleanupPath($file);
+    my $cleanedUpDir = cleanupPath($dir);
+
+    if ($absolutePaths && !beginsWith($cleanedUpFile, $cleanedUpDir)) {
+        return $cleanedUpFile;
+    }
+
+    my $out = File::Spec->abs2rel($cleanedUpFile, $cleanedUpDir);
     $out =~ s,\\,/,g;
     $out = "\"$out\"" if ($out =~ / /);
     return $out;
@@ -1097,9 +1110,9 @@ foreach my $lib (@modules_to_sync) {
                                     $header_copies++ if (!$shadow && syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                 }
                             } elsif (!$qpa_header) {
-                                $oheader = "$out_basedir/include/$lib/$module_version/$lib/private/$header";
+                                $oheader = "$out_basedir/include/$lib/private/$header";
                             } else {
-                                $oheader = "$out_basedir/include/$lib/$module_version/$lib/qpa/$header";
+                                $oheader = "$out_basedir/include/$lib/qpa/$header";
                             }
                             $header_copies++ if (!$shadow && syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
 
