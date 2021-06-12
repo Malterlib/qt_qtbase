@@ -90,6 +90,21 @@ struct QScopedPointerPodDeleter
     void operator()(void *pointer) const noexcept { cleanup(pointer); }
 };
 
+#ifdef DMalterlibNontrackedFree
+    extern "C"
+    {
+        void nontracked_free(void *__ptr);
+    }
+
+    struct QScopedPointerPodDeleterNonTracked
+    {
+        static inline void cleanup(void *pointer) noexcept { nontracked_free(pointer); }
+        void operator()(void *pointer) const noexcept { cleanup(pointer); }
+    };
+#else
+    using QScopedPointerPodDeleterNonTracked = QScopedPointerPodDeleter;
+#endif
+
 #ifndef QT_NO_QOBJECT
 template <typename T>
 struct QScopedPointerObjectDeleteLater

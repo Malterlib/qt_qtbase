@@ -45,6 +45,8 @@
 #include <QtCore/qlibrary.h>
 #endif
 #include <QtCore/qplugin.h>
+#include <QtCore/qtcore-config.h>
+
 
 QT_BEGIN_NAMESPACE
 

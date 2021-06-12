@@ -257,7 +257,11 @@ class Q_CORE_EXPORT QAppleLogActivity
 {
 public:
     QAppleLogActivity() : activity(nullptr) {}
-    QAppleLogActivity(os_activity_t activity) : activity(activity) {}
+	#if __has_feature(objc_arc)
+		QAppleLogActivity(os_activity_t activity) : activity((void *)CFBridgingRetain(activity)) {}
+	#else
+		QAppleLogActivity(os_activity_t activity) : activity(activity) {}
+	#endif
     ~QAppleLogActivity() { if (activity) leave(); }
 
     Q_DISABLE_COPY(QAppleLogActivity)
@@ -284,7 +288,11 @@ public:
 
     operator os_activity_t()
     {
-        return reinterpret_cast<os_activity_t>(static_cast<void *>(activity));
+		#if __has_feature(objc_arc)
+			return reinterpret_cast<os_activity_t>(CFBridgingRelease(activity));
+		#else
+			return reinterpret_cast<os_activity_t>(static_cast<void *>(activity));
+		#endif
     }
 
     void swap(QAppleLogActivity &other)

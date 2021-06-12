@@ -170,7 +170,7 @@ struct BindingFunctionVTable
     const MoveCtrFn moveConstruct;
     const qsizetype size;
 
-    template<typename Callable, typename PropertyType=void>
+    template<typename Callable, typename PropertyType=int>
     static constexpr BindingFunctionVTable createFor()
     {
         static_assert (alignof(Callable) <= alignof(std::max_align_t), "Bindings do not support overaligned functors!");
@@ -204,7 +204,7 @@ struct BindingFunctionVTable
     }
 };
 
-template<typename Callable, typename PropertyType=void>
+template<typename Callable, typename PropertyType=int>
 inline constexpr BindingFunctionVTable bindingFunctionVTable = BindingFunctionVTable::createFor<Callable, PropertyType>();
 
 

@@ -232,11 +232,19 @@ extern "C" void  hb_free_impl(void *ptr);
  */
 
 #if (defined(__GNUC__) || defined(__clang__)) && defined(__OPTIMIZE__)
+#ifndef likely
 #define likely(expr) (__builtin_expect (!!(expr), 1))
+#endif
+#ifndef unlikely
 #define unlikely(expr) (__builtin_expect (!!(expr), 0))
+#endif
 #else
+#ifndef likely
 #define likely(expr) (expr)
+#endif
+#ifndef unlikely
 #define unlikely(expr) (expr)
+#endif
 #endif
 
 #if !defined(__GNUC__) && !defined(__clang__)
