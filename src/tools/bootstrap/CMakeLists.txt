@@ -139,6 +139,7 @@ qt_internal_extend_target(Bootstrap CONDITION APPLE
     SOURCES
         ../../corelib/global/qoperatingsystemversion.cpp
         ../../corelib/global/qoperatingsystemversion_darwin.mm
+        ../../corelib/io/qfilesystemengine_mac.mm
         ../../corelib/kernel/qcore_foundation.mm
         ../../corelib/kernel/qcore_mac.mm
         ../../corelib/kernel/qcoreapplication_mac.cpp
