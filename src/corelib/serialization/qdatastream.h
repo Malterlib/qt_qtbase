@@ -8,6 +8,7 @@
 #include <QtCore/qiodevicebase.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qnamespace.h>
+#include <iterator>
 
 #ifdef Status
 #error qdatastream.h must be included before any header file that defines Status

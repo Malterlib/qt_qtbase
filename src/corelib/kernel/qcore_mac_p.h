@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-#include "private/qglobal_p.h"
+#include "../global/qglobal_p.h"
 
 #include <QtCore/qoperatingsystemversion.h>
 
@@ -47,9 +47,9 @@ kern_return_t IOObjectRelease(io_object_t object);
 #include <functional>
 #endif
 
-#include "qstring.h"
-#include "qscopedpointer.h"
-#include "qpair.h"
+#include "../text/qstring.h"
+#include "../tools/qscopedpointer.h"
+#include "../tools/qpair.h"
 
 #if defined( __OBJC__) && defined(QT_NAMESPACE)
 #define QT_NAMESPACE_ALIAS_OBJC_CLASS(__KLASS__) @compatibility_alias __KLASS__ QT_MANGLE_NAMESPACE(__KLASS__)
@@ -257,7 +257,11 @@ class Q_CORE_EXPORT QAppleLogActivity
 {
 public:
     QAppleLogActivity() : activity(nullptr) {}
-    QAppleLogActivity(os_activity_t activity) : activity(activity) {}
+	#if __has_feature(objc_arc)
+		QAppleLogActivity(os_activity_t activity) : activity((void *)CFBridgingRetain(activity)) {}
+	#else
+		QAppleLogActivity(os_activity_t activity) : activity(activity) {}
+	#endif
     ~QAppleLogActivity() { if (activity) leave(); }
 
     Q_DISABLE_COPY(QAppleLogActivity)
@@ -284,7 +288,11 @@ public:
 
     operator os_activity_t()
     {
-        return reinterpret_cast<os_activity_t>(static_cast<void *>(activity));
+		#if __has_feature(objc_arc)
+			return reinterpret_cast<os_activity_t>(CFBridgingRelease(activity));
+		#else
+			return reinterpret_cast<os_activity_t>(static_cast<void *>(activity));
+		#endif
     }
 
     void swap(QAppleLogActivity &other)

@@ -1432,7 +1432,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
             else
                 return std::move(function).toUtf8();    // -> QByteArray
         }();
-        QScopedPointer<char, QScopedPointerPodDeleter> demangled;
+        QScopedPointer<char, QScopedPointerPodDeleterNonTracked> demangled;
         demangled.reset(abi::__cxa_demangle(fn, nullptr, nullptr, nullptr));
 
         if (demangled)

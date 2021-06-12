@@ -256,11 +256,19 @@ extern "C" void  hb_free_impl(void *ptr);
 #endif
 
 #if defined(__OPTIMIZE__) && hb_has_builtin(__builtin_expect)
+#ifndef likely
 #define likely(expr) __builtin_expect (bool(expr), 1)
+#endif
+#ifndef unlikely
 #define unlikely(expr) __builtin_expect (bool(expr), 0)
+#endif
 #else
+#ifndef likely
 #define likely(expr) (expr)
+#endif
+#ifndef unlikely
 #define unlikely(expr) (expr)
+#endif
 #endif
 
 #if !defined(__GNUC__) && !defined(__clang__)

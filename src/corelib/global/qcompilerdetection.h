@@ -75,8 +75,12 @@
 #  define Q_FUNC_INFO __FUNCSIG__
 #  define Q_ASSUME_IMPL(expr) __assume(expr)
 #  define Q_UNREACHABLE_IMPL() __assume(0)
+#ifndef Q_DECL_EXPORT
 #  define Q_DECL_EXPORT __declspec(dllexport)
+#endif
+#ifndef Q_DECL_IMPORT
 #  define Q_DECL_IMPORT __declspec(dllimport)
+#endif
 #  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) stdext::make_unchecked_array_iterator(x) // Since _MSC_VER >= 1800
 #  define QT_MAKE_CHECKED_ARRAY_ITERATOR(x, N) stdext::make_checked_array_iterator(x, size_t(N)) // Since _MSC_VER >= 1500
 
@@ -100,12 +104,20 @@
 #  define __is_pod(X) false
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
 #  ifdef Q_OS_LINUX
-#    define Q_DECL_EXPORT     __attribute__((visibility("default")))
-#    define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#	 ifndef Q_DECL_EXPORT
+#      define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#	 endif
+#    ifndef Q_DECL_IMPORT
+#      define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#    endif
 #    define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #  else
-#    define Q_DECL_EXPORT     __declspec(dllexport)
-#    define Q_DECL_IMPORT     __declspec(dllimport)
+#	 ifndef Q_DECL_EXPORT
+#      define Q_DECL_EXPORT     __declspec(dllexport)
+#    endif
+#    ifndef Q_DECL_IMPORT
+#      define Q_DECL_IMPORT     __declspec(dllimport)
+#    endif
 #  endif
 
 #elif defined(__GNUC__)
@@ -177,16 +189,26 @@
 #  endif
 
 #  ifdef Q_OS_WIN
-#    define Q_DECL_EXPORT     __declspec(dllexport)
-#    define Q_DECL_IMPORT     __declspec(dllimport)
+#	 ifndef Q_DECL_EXPORT
+#      define Q_DECL_EXPORT     __declspec(dllexport)
+#    endif
+#    ifndef Q_DECL_IMPORT
+#      define Q_DECL_IMPORT     __declspec(dllimport)
+#    endif
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT_OVERRIDABLE __attribute__((visibility("default"), weak))
 #    ifdef QT_USE_PROTECTED_VISIBILITY
+#ifndef Q_DECL_EXPORT
 #      define Q_DECL_EXPORT     __attribute__((visibility("protected")))
+#endif
 #    else
+#ifndef Q_DECL_EXPORT
 #      define Q_DECL_EXPORT     __attribute__((visibility("default")))
+#endif
 #    endif
+#ifndef Q_DECL_IMPORT
 #    define Q_DECL_IMPORT     __attribute__((visibility("default")))
+#endif
 #    define Q_DECL_HIDDEN     __attribute__((visibility("hidden")))
 #  endif
 
