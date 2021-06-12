@@ -177,6 +177,8 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *) override;
 
+	virtual void compressEventInto(QEvent* _pDest, QEvent* _pSrc);
+    virtual void notifyPostedEventRemoved(QObject* receiver, QEvent* event, QPostEventList *postedEvents);
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 #endif // QT_NO_QOBJECT
 

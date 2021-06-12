@@ -866,6 +866,10 @@ void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerI
                 && static_cast<QTimerEvent *>(pe.event)->timerId() == timerId) {
             --pe.receiver->d_func()->postedEvents;
             pe.event->m_posted = false;
+
+            if (qApp)
+              qApp->notifyPostedEventRemoved(pe.receiver, pe.event, &data->postEventList);
+
             delete pe.event;
             const_cast<QPostEvent &>(pe).event = 0;
             return;
