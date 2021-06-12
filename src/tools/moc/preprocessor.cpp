@@ -2,6 +2,15 @@
 // Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#include <Mib/BuildSystem/BuildSystemDependency>
+#include <QtCore/QString>
+
+extern NMib::NBuildSystem::CMalterlibDependencyTracker g_Tracker;
+CStr fg_MalterlibStrFromQt(QString const &_Str);
+#endif
+
 #include "preprocessor.h"
 #include "utils.h"
 #include <qstringlist.h>
@@ -1046,6 +1055,10 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
     if (Q_UNLIKELY(debugIncludes)) {
         fprintf(stderr, "debug-includes: found '%s'\n", result.constData());
     }
+
+#ifdef DMalterlibQtFeatures
+    g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(fi.absoluteFilePath()));
+#endif
 
     return result;
 }

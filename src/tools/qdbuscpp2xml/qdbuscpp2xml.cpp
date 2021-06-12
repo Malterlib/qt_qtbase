@@ -1,6 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include "moc.h"
+
 #include <qbuffer.h>
 #include <qbytearray.h>
 #include <qdebug.h>
@@ -31,7 +33,6 @@ static const char docTypeHeader[] =
 #include <private/qdbusmetatype_p.h>
 #include <private/qdbusutil_p.h>
 
-#include "moc.h"
 #include "generator.h"
 #include "preprocessor.h"
 

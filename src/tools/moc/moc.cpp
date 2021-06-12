@@ -2,6 +2,18 @@
 // Copyright (C) 2019 Olivier Goffart <ogoffart@woboq.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#include <Mib/BuildSystem/BuildSystemDependency>
+#include <QtCore/QString>
+
+NMib::NBuildSystem::CMalterlibDependencyTracker g_Tracker;
+CStr fg_MalterlibStrFromQt(QString const &_Str)
+{
+    return CWStr((ch16 const*)_Str.constData());
+}
+#endif
+
 #include "moc.h"
 #include "generator.h"
 #include "qdatetime.h"
@@ -1488,6 +1500,9 @@ void Moc::parsePluginData(ClassDef *def)
                 return;
             }
             parsedPluginMetadataFiles.append(fi.canonicalFilePath());
+#ifdef DMalterlibQtFeatures
+			g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(fi.absoluteFilePath()));
+#endif
             metaData = file.readAll();
         }
     }

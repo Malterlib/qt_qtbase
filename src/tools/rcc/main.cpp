@@ -2,6 +2,10 @@
 // Copyright (C) 2018 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#endif
+
 #include <rcc.h>
 
 #include <qdebug.h>
@@ -53,6 +57,9 @@ int createProject(const QString &outFileName)
     if (outFileName.isEmpty()) {
         isOk = file.open(stdout, QFile::WriteOnly | QFile::Text);
     } else {
+#ifdef DMalterlibQtFeatures
+		g_Tracker.f_AddOutputFile(fg_MalterlibStrFromQt(outFileName));
+#endif
         file.setFileName(outFileName);
         isOk = file.open(QFile::WriteOnly | QFile::Text);
     }
@@ -129,6 +136,11 @@ int runRcc(int argc, char *argv[])
     tempOption.setDescription(QStringLiteral("Use temporary <file> for big resources."));
     tempOption.setValueName(QStringLiteral("file"));
     parser.addOption(tempOption);
+
+#ifdef DMalterlibQtFeatures
+    QCommandLineOption idsDependencyOption(QStringLiteral("idsdependency"), QStringLiteral("Output an ids dependency file with <name>."), QStringLiteral("name"));
+    parser.addOption(idsDependencyOption);
+#endif
 
     QCommandLineOption nameOption(QStringLiteral("name"), QStringLiteral("Create an external initialization function with <name>."), QStringLiteral("name"));
     parser.addOption(nameOption);
@@ -343,6 +355,9 @@ int runRcc(int argc, char *argv[])
         // using this overload close() only flushes.
         out.open(stdout, mode);
     } else {
+#ifdef DMalterlibQtFeatures
+        g_Tracker.f_AddOutputFile(fg_MalterlibStrFromQt(outFilename));
+#endif
         out.setFileName(outFilename);
         if (!out.open(mode)) {
             const QString msg = QString::fromLatin1("Unable to open %1 for writing: %2\n")
@@ -411,6 +426,14 @@ int runRcc(int argc, char *argv[])
         out.remove();
         return 1;
     }
+#ifdef DMalterlibQtFeatures
+    if (parser.isSet(idsDependencyOption))
+    {
+        CStr OutputName = fg_MalterlibStrFromQt(parser.value(idsDependencyOption));
+        g_Tracker.f_WriteDependencyFile(OutputName);
+    }
+#endif
+
     return 0;
 }
 

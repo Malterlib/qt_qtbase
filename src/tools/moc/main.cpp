@@ -2,6 +2,10 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#endif
+
 #include <depfile_shared.h>
 #include "preprocessor.h"
 #include "moc.h"
@@ -15,6 +19,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <iostream>
 
 #include <qcoreapplication.h>
 #include <qcommandlineoption.h>
@@ -238,6 +243,11 @@ int runMoc(int argc, char **argv)
     noIncludeOption.setDescription(QStringLiteral("Do not generate an #include statement."));
     parser.addOption(noIncludeOption);
 
+#ifdef DMalterlibQtFeatures
+    QCommandLineOption idsDependencyOption(QStringLiteral("d"), QStringLiteral("Output an ids dependency file with <name>."), QStringLiteral("name"));
+    parser.addOption(idsDependencyOption);
+#endif
+
     QCommandLineOption pathPrefixOption(QStringLiteral("p"));
     pathPrefixOption.setDescription(QStringLiteral("Path prefix for included file."));
     pathPrefixOption.setValueName(QStringLiteral("path"));
@@ -451,6 +461,10 @@ int runMoc(int argc, char **argv)
         filename = QStringLiteral("standard input");
         in.open(stdin, QIODevice::ReadOnly);
     } else {
+#ifdef DMalterlibQtFeatures
+        g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(filename));
+#endif
+
         in.setFileName(filename);
         if (!in.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "moc: %s: No such file\n", qPrintable(filename));
@@ -560,6 +574,9 @@ int runMoc(int argc, char **argv)
             }
             jsonOutput.reset(f);
         }
+#ifdef DMalterlibQtFeatures
+        g_Tracker.f_AddOutputFile(fg_MalterlibStrFromQt(output));
+#endif
     } else { // use stdout
         out = stdout;
         outputToFile = false;
@@ -576,6 +593,14 @@ int runMoc(int argc, char **argv)
 
     if (output.size())
         fclose(out);
+
+#ifdef DMalterlibQtFeatures
+    if (parser.isSet(idsDependencyOption))
+    {
+        CStr OutputName = fg_MalterlibStrFromQt(parser.value(idsDependencyOption));
+        g_Tracker.f_WriteDependencyFile(OutputName);
+    }
+#endif
 
     if (parser.isSet(depFileOption)) {
         // 4. write a Make-style dependency file (can also be consumed by Ninja).

@@ -2,7 +2,20 @@
 // Copyright (C) 2018 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#include <Mib/BuildSystem/BuildSystemDependency>
+#include <QtCore/QString>
+
+NMib::NBuildSystem::CMalterlibDependencyTracker g_Tracker;
+CStr fg_MalterlibStrFromQt(QString const &_Str)
+{
+    return CWStr((ch16 const*)_Str.constData());
+}
+#endif
+
 #include "rcc.h"
+#include <iostream>
 
 #include <qbytearray.h>
 #include <qdatetime.h>
@@ -24,6 +37,56 @@
 // Note: A copy of this file is used in Qt Designer (qttools/src/designer/src/lib/shared/rcc.cpp)
 
 QT_BEGIN_NAMESPACE
+
+namespace
+{
+    struct PathHelpers
+    {
+        PathHelpers(QDir const &basePath)
+            : basePath(basePath)
+        {
+            std::string ReplacePathsString;
+            if (auto *pValue = std::getenv("QT_TOOLS_REPLACE_PATHS"))
+                ReplacePathsString = pValue;
+
+            auto SplitItem = QString::fromStdString(";");
+            auto SplitEquals = QString::fromStdString("=");
+
+            if (!ReplacePathsString.empty())
+            {
+                auto replaceSplit = QString::fromStdString(ReplacePathsString).split(SplitItem);
+                for (auto &replace : replaceSplit)
+                {
+                    if (replace.isEmpty())
+                        continue;
+
+                    auto split = replace.split(SplitEquals);
+                    if (split.size() != 2)
+                        continue;
+                    auto Key = split[0];
+                    auto Value = split[1];
+
+
+                    ReplacePaths[Key] = Value;
+                }
+            }
+        }
+
+        QString CollapseRelativePath(QString const &string)
+        {
+            QString returnValue = string;
+            for (auto &mapping : ReplacePaths)
+                returnValue = returnValue.replace(mapping.first, mapping.second);
+
+            returnValue = basePath.cleanPath(basePath.absoluteFilePath(returnValue));
+
+            return returnValue;
+        }
+
+        QDir basePath;
+        std::map<QString, QString> ReplacePaths;
+    };
+}
 
 using namespace Qt::StringLiterals;
 
@@ -232,6 +295,10 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
         *errorMessage = msgOpenReadFailed(m_fileInfo.absoluteFilePath(), file.errorString());
         return 0;
     }
+#ifdef DMalterlibQtFeatures
+	g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(m_fileInfo.absoluteFilePath()));
+#endif
+
     QByteArray data = file.readAll();
 
     // Check if compression is useful for this file
@@ -483,6 +550,8 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
     int compressLevel = m_compressLevel;
     int compressThreshold = m_compressThreshold;
 
+    PathHelpers pathHelpers(currentPath);
+
     while (!reader.atEnd()) {
         QXmlStreamReader::TokenType t = reader.readNext();
         switch (t) {
@@ -599,9 +668,8 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     alias.remove(0, 3);
                 alias = QDir::cleanPath(m_resourceRoot) + prefix + alias;
 
-                QString absFileName = fileName;
-                if (QDir::isRelativePath(absFileName))
-                    absFileName.prepend(currentPath);
+                QString absFileName = pathHelpers.CollapseRelativePath(fileName);
+
                 QFileInfo file(absFileName);
                 if (file.isDir()) {
                     QDir dir(file.filePath());
@@ -610,6 +678,9 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
 
                     QStringList filePaths;
                     QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
+#ifdef DMalterlibQtFeatures
+					TCVector<CStr> FoundFiles;
+#endif
                     while (it.hasNext()) {
                         it.next();
                         if (it.fileName() == "."_L1 || it.fileName() == ".."_L1)
@@ -622,6 +693,12 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
 
                     for (const QString &filePath : filePaths) {
                         QFileInfo child(filePath);
+#ifdef DMalterlibQtFeatures
+                        auto AbsolutePath = fg_MalterlibStrFromQt(child.absoluteFilePath());
+                        FoundFiles.f_Insert(AbsolutePath);
+
+                        g_Tracker.f_AddInputFile(AbsolutePath);
+#endif
                         const bool arc =
                                 addFile(alias + child.fileName(),
                                         RCCFileInfo(child.fileName(), child, language, territory,
@@ -632,7 +709,13 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         if (!arc)
                             m_failedResources.push_back(child.fileName());
                     }
+#ifdef DMalterlibQtFeatures
+					g_Tracker.f_AddFind(fg_MalterlibStrFromQt(QFileInfo(dir.path()).absoluteFilePath()), true, true, EFileAttrib_File | EFileAttrib_Directory, FoundFiles);
+#endif
                 } else if (listMode || file.isFile()) {
+#ifdef DMalterlibQtFeatures
+					g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(absFileName));
+#endif
                     const bool arc =
                         addFile(alias,
                                 RCCFileInfo(alias.section(slash, -1),
@@ -745,7 +828,6 @@ void RCCResourceLibrary::reset()
     m_errorDevice = nullptr;
     m_failedResources.clear();
 }
-
 
 bool RCCResourceLibrary::readFiles(bool listMode, QIODevice &errorDevice)
 {
