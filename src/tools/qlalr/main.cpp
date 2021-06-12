@@ -9,6 +9,7 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
 
@@ -21,7 +22,7 @@ using namespace Qt::StringLiterals;
 
 static void help_me ()
 {
-  qerr() << "Usage: qlalr [options] [input file name]" << Qt::endl
+  qerr() << "Usage: qlalr [options] [input file name] [private output file name]" << Qt::endl
        << Qt::endl
        << "  --help, -h\t\tdisplay this help and exit" << Qt::endl
        << "  --verbose, -v\t\tverbose output" << Qt::endl
@@ -45,6 +46,7 @@ int main (int argc, char *argv[])
   bool qt_copyright = false;
   bool warnings_are_errors = false;
   QString file_name;
+  QString private_out;
 
   const QStringList args = app.arguments().mid(1);
   for (const QString &arg : args) {
@@ -72,11 +74,20 @@ int main (int argc, char *argv[])
       else if (file_name.isEmpty ())
         file_name = arg;
 
+      else if (private_out.isEmpty ())
+        private_out = arg;
+
       else
         qerr() << "*** Warning. Ignore argument `" << arg << "'" << Qt::endl;
     }
 
   if (file_name.isEmpty ())
+    {
+      help_me ();
+      exit (EXIT_SUCCESS);
+    }
+
+  if (private_out.isEmpty ())
     {
       help_me ();
       exit (EXIT_SUCCESS);
@@ -106,7 +117,9 @@ int main (int argc, char *argv[])
   Automaton aut (&grammar);
   aut.build ();
 
-  CppGenerator gen (p, grammar, aut, generate_report);
+  QFileInfo fi(private_out);
+
+  CppGenerator gen (p, grammar, aut, generate_report, fi.absolutePath());
   gen.setDebugInfo (debug_info);
   gen.setCopyright (qt_copyright);
   gen.setWarningsAreErrors (warnings_are_errors);
