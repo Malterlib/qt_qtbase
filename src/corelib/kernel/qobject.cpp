@@ -138,6 +138,11 @@ static inline QBasicMutex *signalSlotLock(const QObject *o)
     return &_q_ObjectMutexPool[uint(quintptr(o)) % sizeof(_q_ObjectMutexPool)/sizeof(QBasicMutex)];
 }
 
+extern "C"
+{
+    void (*qt_removeObjectOptional)(QObject *) = NULL;
+}
+
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = nullptr;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = nullptr;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = nullptr;
@@ -1161,6 +1166,9 @@ QObject::~QObject()
 
     if (Q_UNLIKELY(qtHookData[QHooks::RemoveQObject]))
         reinterpret_cast<QHooks::RemoveQObjectCallback>(qtHookData[QHooks::RemoveQObject])(this);
+
+    if (qt_removeObjectOptional)
+        qt_removeObjectOptional(this);
 
     Q_TRACE(QObject_dtor, this);
 
