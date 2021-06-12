@@ -26,6 +26,7 @@
 #         Specifies the module this tool belongs to. The module's Qt6${module}Tools.cmake file
 #         will then contain targets for this tool.
 #
+
 function(qt_internal_add_tool target_name)
     qt_tool_target_to_name(name ${target_name})
     set(option_keywords BOOTSTRAP NO_QT NO_INSTALL USER_FACING INSTALL_VERSIONED_LINK)

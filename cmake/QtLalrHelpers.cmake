@@ -19,7 +19,7 @@ function(qt_qlalr_find_option_in_list input_list regex out_var)
             return()
         endif()
     endforeach()
-    message(FATAL_ERROR "qt_qlalr_find_option_in_list: Could not extract ${out_var}")
+    message(FATAL_ERROR "qt_qlalr_find_option_in_list: Could not extract ${out_var} from ${input_list}")
 endfunction()
 
 # Generate a few output files using qlalr, and assign those to 'consuming_target'.
@@ -45,7 +45,7 @@ function(qt_process_qlalr consuming_target input_file_list flags)
         set(impl_file "${impl}")
         add_custom_command(
             OUTPUT ${cpp_file} ${private_file} ${decl_file} ${impl_file}
-            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr ${flags} ${input_file}
+            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr ${flags} ${input_file} "${CMAKE_CURRENT_BINARY_DIR}/${private_file}"
             DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::qlalr
             MAIN_DEPENDENCY ${input_file}
         )

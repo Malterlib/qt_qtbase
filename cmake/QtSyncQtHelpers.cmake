@@ -187,7 +187,7 @@ function(qt_compute_injection_forwarding_header target)
     file(RELATIVE_PATH relpath "${PROJECT_BINARY_DIR}" "${source_absolute_path}")
 
     if (arg_PRIVATE)
-        set(fwd "${PROJECT_VERSION}/${module}/private/${file_name}")
+        set(fwd "private/${file_name}")
     else()
         set(fwd "${file_name}")
     endif()

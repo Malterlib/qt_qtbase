@@ -899,6 +899,7 @@ if (QT_FEATURE_vulkan)
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/generated_header.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
+        BYPRODUCTS "/DIR:${CMAKE_CURRENT_BINARY_DIR}/vulkan"
         DEPENDS vulkan/vk.xml
         COMMENT "Generating vulkan data"
     )
