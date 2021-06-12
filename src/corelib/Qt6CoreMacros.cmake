@@ -938,7 +938,6 @@ function(qt6_extract_metatypes target)
 
     get_target_property(target_binary_dir ${target} BINARY_DIR)
     set(type_list_file "${target_binary_dir}/meta_types/${target}_json_file_list.txt")
-    set(type_list_file_manual "${target_binary_dir}/meta_types/${target}_json_file_list_manual.txt")
 
     set(target_autogen_build_dir "")
     _qt_internal_get_target_autogen_build_dir(${target} target_autogen_build_dir)
@@ -972,11 +971,11 @@ function(qt6_extract_metatypes target)
             "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
 
         set (use_dep_files FALSE)
-        if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.17") # Requires automoc changes present only in 3.17
-            if(CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
-                set(use_dep_files TRUE)
-            endif()
-        endif()
+        #if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.17") # Requires automoc changes present only in 3.17
+        #    if(CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+        #        set(use_dep_files TRUE)
+        #    endif()
+        #endif()
 
         set(cmake_automoc_parser_timestamp "${type_list_file}.timestamp")
 
@@ -1032,7 +1031,7 @@ function(qt6_extract_metatypes target)
             add_custom_command(OUTPUT ${type_list_file}
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
                     ${cmake_autogen_timestamp_file}
-                BYPRODUCTS "${cmake_automoc_parser_timestamp}"
+                BYPRODUCTS "${cmake_automoc_parser_timestamp}" "${type_list_file}"
                 COMMAND
                     ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
                     --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
@@ -1054,12 +1053,8 @@ function(qt6_extract_metatypes target)
     set(manual_dependencies)
     if(arg_MANUAL_MOC_JSON_FILES)
         list(REMOVE_DUPLICATES arg_MANUAL_MOC_JSON_FILES)
-        file(GENERATE
-            OUTPUT ${type_list_file_manual}
-            CONTENT "$<JOIN:$<GENEX_EVAL:${arg_MANUAL_MOC_JSON_FILES}>,\n>"
-        )
-        list(APPEND manual_dependencies ${arg_MANUAL_MOC_JSON_FILES} ${type_list_file_manual})
-        set(manual_args "@${type_list_file_manual}")
+        list(APPEND manual_dependencies ${arg_MANUAL_MOC_JSON_FILES})
+        set(manual_args ${arg_MANUAL_MOC_JSON_FILES})
     endif()
 
     if (NOT manual_args AND NOT automoc_args)
@@ -1660,7 +1655,7 @@ endfunction()
 
 function(__qt_propagate_generated_resource target resource_name generated_source_code output_generated_target)
     get_target_property(type ${target} TYPE)
-    if(type STREQUAL STATIC_LIBRARY)
+    if(type STREQUAL STATIC_LIBRARY AND NOT BUILD_RESOURCES_IN_LIBS)
         get_target_property(resource_count ${target} _qt_generated_resource_target_count)
         if(NOT resource_count)
             set(resource_count "0")
