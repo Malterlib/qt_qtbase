@@ -1366,6 +1366,8 @@ void QLineEdit::setReadOnly(bool enable)
     Q_D(QLineEdit);
     if (d->control->isReadOnly() != enable) {
         d->control->setReadOnly(enable);
+        if (!d->cursorVisible)
+            d->control->setBlinkingCursorEnabled(false);
         d->setClearButtonEnabled(!enable);
         setAttribute(Qt::WA_MacShowFocusRect, !enable);
         setAttribute(Qt::WA_InputMethodEnabled, d->shouldEnableInputMethod());

@@ -279,6 +279,12 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
     if (option->state & QStyle::State_MouseOver) {
         option->activeSubControls = d->hoverControl;
     }
+#ifdef Q_OS_MAC
+    // This is a filthy hack because sometimes mouse over is not cleared correctly on OSX
+    QPoint CursorPos = mapFromGlobal(QCursor::pos());
+    if (!option->rect.contains(CursorPos))
+        option->state &= ~QStyle::State_MouseOver;
+#endif
     if (d->menuButtonDown) {
         option->state |= QStyle::State_Sunken;
         option->activeSubControls |= QStyle::SC_ToolButtonMenu;

@@ -144,6 +144,9 @@ QMacPasteboard::~QMacPasteboard()
     PasteboardResolvePromises(paste);
     if (paste)
         CFRelease(paste);
+
+    if (mime)
+        delete mime;
 }
 
 PasteboardRef
