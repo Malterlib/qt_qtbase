@@ -1555,6 +1555,15 @@ void QTableView::paintEvent(QPaintEvent *event)
         if (left == -1) left = 0;
         if (right == -1) right = horizontalHeader->count() - 1;
 
+        // make sure that we haven't exceeded lastVisualColumn
+        {
+            if (right > lastVisualColumn)
+                right = lastVisualColumn;
+
+            if (left > lastVisualColumn)
+                left = lastVisualColumn;
+        }
+
         // get the vertical start and end visual sections and if alternate color
         int bottom = verticalHeader->visualIndexAt(dirtyArea.bottom());
         if (bottom == -1) bottom = verticalHeader->count() - 1;

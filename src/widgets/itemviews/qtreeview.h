@@ -188,6 +188,7 @@ protected:
     void changeEvent(QEvent *event) override;
     void timerEvent(QTimerEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
     void drawTree(QPainter *painter, const QRegion &region) const;
     virtual void drawRow(QPainter *painter,

@@ -1062,6 +1062,9 @@ void QWidgetTextControl::processEvent(QEvent *e, const QTransform &transform, QW
             d->mouseDoubleClickEvent(ev, ev->button(), transform.map(ev->position().toPoint()), ev->modifiers(),
                                      ev->buttons(), ev->globalPosition().toPoint());
             break; }
+        case QEvent::Leave: {
+            d->highlightedAnchor = QString();
+            break; }
         case QEvent::InputMethod:
             d->inputMethodEvent(static_cast<QInputMethodEvent *>(e));
             break;

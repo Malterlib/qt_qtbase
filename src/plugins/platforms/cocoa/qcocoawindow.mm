@@ -450,6 +450,10 @@ void QCocoaWindow::setVisible(bool visible)
 
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
             NSWindow *nativeParentWindow = parentCocoaWindow->nativeWindow();
+
+            if (parentCocoaWindow->m_nsWindow && [parentCocoaWindow->m_nsWindow canBecomeKeyWindow])
+				[parentCocoaWindow->m_nsWindow makeKeyAndOrderFront: parentCocoaWindow->m_nsWindow];
+
             if (m_resizableTransientParent
                 && !(nativeParentWindow.styleMask & NSWindowStyleMaskFullScreen))
                 // A window should not be resizable while a transient popup is open
