@@ -1347,6 +1347,18 @@ void QTreeView::paintEvent(QPaintEvent *event)
     }
 }
 
+/*!
+        \reimp
+*/
+void QTreeView::resizeEvent(QResizeEvent *event)
+{
+    Q_D(QTreeView);
+    if (d->delayedPendingLayout)
+        return;
+
+    QAbstractItemView::resizeEvent(event);
+}
+
 int QTreeViewPrivate::logicalIndexForTree() const
 {
     int index = treePosition;
