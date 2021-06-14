@@ -127,6 +127,7 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
         source:m_lastView
         slideBack:YES];
 
+    m_drag->setMimeData(0);
     m_drag = nullptr;
     return m_executed_drop_action;
 }
