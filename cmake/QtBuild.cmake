@@ -252,6 +252,7 @@ set(CMAKE_INSTALL_RPATH "" CACHE STRING "RPATH for installed binaries")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 function(qt_setup_tool_path_command)
+    return()
     if(NOT CMAKE_HOST_WIN32)
         return()
     endif()
