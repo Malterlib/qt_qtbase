@@ -265,6 +265,7 @@ endif()
 set(CMAKE_INSTALL_LIBDIR "${INSTALL_LIBDIR}")
 
 function(qt_setup_tool_path_command)
+    return()
     if(NOT CMAKE_HOST_WIN32)
         return()
     endif()
