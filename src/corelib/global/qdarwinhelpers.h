@@ -33,5 +33,8 @@
 #    define Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type##Ref
 #endif
 
+#ifdef __OBJC__
+#  include <Foundation/Foundation.h>
+#endif
 
 #endif // QTDARWINHELPERS_H
