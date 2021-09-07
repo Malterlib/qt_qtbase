@@ -741,6 +741,10 @@ constexpr inline QTypeTraits::Promoted<T, U> qBound(const U &min, const T &val, 
 #define Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(type) typedef struct type *type ## Ref;
 #endif
 
+#ifdef __OBJC__
+#  include <Foundation/Foundation.h>
+#endif
+
 #ifdef Q_OS_DARWIN
 #  define QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(macos, ios, tvos, watchos) \
     ((defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && macos != __MAC_NA && __MAC_OS_X_VERSION_MAX_ALLOWED >= macos) || \
