@@ -45,6 +45,8 @@
 
 #include <IOSurface/IOSurface.h>
 
+typedef struct CGColorSpace *CGColorSpaceRef;
+
 QT_BEGIN_NAMESPACE
 
 class QIOSurfaceGraphicsBuffer : public QPlatformGraphicsBuffer
