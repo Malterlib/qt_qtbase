@@ -14,6 +14,10 @@ function(qt_internal_add_doc_tool_dependency doc_target tool_name)
 endfunction()
 
 function(qt_internal_add_docs)
+    if(QT_BUILD_DISABLE_DOCS)
+        return()
+    endif()
+
     if(${ARGC} EQUAL 1)
         # Function called from old generated CMakeLists.txt that was missing the target parameter
         return()
