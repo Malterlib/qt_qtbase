@@ -14,6 +14,6 @@ if(TARGET Qt::Xml)
     add_subdirectory(masterdetail)
 endif()
 
-if(NOT CMAKE_CROSSCOMPILING) # special case
+if(NOT (CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS)) # special case
     add_subdirectory(sqlbrowser)
 endif()

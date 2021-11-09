@@ -73,7 +73,7 @@ if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
         set(CMAKE_INSTALL_PREFIX ${QtBase_BINARY_DIR} CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     endif()
-    if(CMAKE_CROSSCOMPILING)
+    if(CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS)
         set(__qt_prefix "${CMAKE_STAGING_PREFIX}")
     else()
         set(__qt_prefix "")
@@ -150,7 +150,7 @@ set(BUILD_TESTING ${QT_BUILD_TESTS} CACHE INTERNAL "")
 # Like in qttools/assistant/assistant.pro, load(qt_app), which is guarded by a qtNomakeTools() call.
 
 set(_qt_build_tools_by_default_default ON)
-if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING OR QT_FORCE_NO_TOOLS)
     set(_qt_build_tools_by_default_default OFF)
 endif()
 option(QT_BUILD_TOOLS_BY_DEFAULT "Should tools be built as part of the default 'all' target."
@@ -169,7 +169,7 @@ option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Q
 ## Find host tools (if non native):
 set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")
 
-if (CMAKE_CROSSCOMPILING)
+if (CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS)
     if(NOT IS_DIRECTORY "${QT_HOST_PATH}")
         message(FATAL_ERROR "You need to set QT_HOST_PATH to cross compile Qt.")
     endif()

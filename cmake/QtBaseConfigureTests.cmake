@@ -162,6 +162,7 @@ function(qt_internal_print_cmake_host_and_target_info)
     message(STATUS "CMAKE_SYSTEM_PROCESSOR: \"${CMAKE_SYSTEM_PROCESSOR}\"")
 
     message(STATUS "CMAKE_CROSSCOMPILING: \"${CMAKE_CROSSCOMPILING}\"")
+    message(STATUS "QT_FORCE_NO_TOOLS: \"${QT_FORCE_NO_TOOLS}\"")
 endfunction()
 qt_internal_print_cmake_host_and_target_info()
 

@@ -44,7 +44,7 @@ function(qt_internal_add_tool target_name)
                             " (QT_WILL_BUILD_TOOLS is ${QT_WILL_BUILD_TOOLS}).")
     endif()
 
-    if(CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING AND (name STREQUAL target_name))
+    if((CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS) AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING AND (name STREQUAL target_name))
         message(FATAL_ERROR
             "qt_internal_add_tool must be passed a target obtained from qt_get_tool_target_name.")
     endif()
@@ -55,7 +55,7 @@ function(qt_internal_add_tool target_name)
         get_property(path TARGET ${full_name} PROPERTY LOCATION)
         message(STATUS "Tool '${full_name}' was found at ${path}.")
         set(imported_tool_target_found TRUE)
-        if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        if((CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS) AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
             return()
         endif()
     endif()
@@ -259,7 +259,7 @@ endfunction()
 
 function(qt_export_tools module_name)
     # Bail out when cross-compiling, unless QT_BUILD_TOOLS_WHEN_CROSSCOMPILING is on.
-    if(CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if((CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS) AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
         return()
     endif()
 
@@ -304,7 +304,7 @@ function(qt_export_tools module_name)
             endforeach()
         endif()
 
-        if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+        if ((CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS) AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
             string(REGEX REPLACE "_native$" "" tool_name ${tool_name})
         endif()
         set(extra_cmake_statements "${extra_cmake_statements}
@@ -428,7 +428,7 @@ endfunction()
 # If the user specifies to build tools when cross-compiling, then the
 # suffix "_native" is appended.
 function(qt_get_tool_target_name out_var name)
-    if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if ((CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS) AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
         set(${out_var} ${name}_native PARENT_SCOPE)
     else()
         set(${out_var} ${name} PARENT_SCOPE)
@@ -439,7 +439,7 @@ endfunction()
 # This is the inverse of qt_get_tool_target_name.
 function(qt_tool_target_to_name out_var target)
     set(name ${target})
-    if (CMAKE_CROSSCOMPILING AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
+    if ((CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS) AND QT_BUILD_TOOLS_WHEN_CROSSCOMPILING)
         string(REGEX REPLACE "_native$" "" name ${target})
     endif()
     set(${out_var} ${name} PARENT_SCOPE)
@@ -447,7 +447,7 @@ endfunction()
 
 # Sets QT_WILL_BUILD_TOOLS if tools will be built.
 function(qt_check_if_tools_will_be_built)
-    if(QT_FORCE_FIND_TOOLS OR (CMAKE_CROSSCOMPILING AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING))
+    if(QT_FORCE_FIND_TOOLS OR ((CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS) AND NOT QT_BUILD_TOOLS_WHEN_CROSSCOMPILING))
         set(will_build_tools FALSE)
     else()
         set(will_build_tools TRUE)

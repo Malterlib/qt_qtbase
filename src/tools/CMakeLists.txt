@@ -7,7 +7,7 @@ add_subdirectory(qlalr)
 add_subdirectory(qvkgen)
 
 # Only include the following tools when performing a host build
-if(NOT CMAKE_CROSSCOMPILING)
+if(NOT (CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS))
     add_subdirectory(androiddeployqt)
     if(QT_FEATURE_gui)
         add_subdirectory(androidtestrunner)
