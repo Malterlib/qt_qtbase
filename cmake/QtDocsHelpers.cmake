@@ -17,7 +17,7 @@ function(qt_internal_add_doc_tool_dependency doc_target tool_name)
 endfunction()
 
 function(qt_internal_add_docs)
-    if(NOT QT_BUILD_DOCS)
+    if(NOT QT_BUILD_DOCS OR QT_BUILD_DISABLE_DOCS)
         return()
     endif()
 
