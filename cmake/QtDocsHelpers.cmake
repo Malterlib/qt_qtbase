@@ -54,7 +54,7 @@ endfunction()
 # QT_QDOC_SHOW_INTERNAL - same as the option but can be set as either an environment or
 # cmake variable.
 function(qt_internal_add_docs)
-    if(NOT QT_BUILD_DOCS)
+    if(NOT QT_BUILD_DOCS OR QT_BUILD_DISABLE_DOCS)
         return()
     endif()
 
