@@ -813,7 +813,7 @@ endfunction()
 # Creates mkspecs/qdevice.pri which contains target device information for cross-builds.
 # The content of QT_QMAKE_DEVICE_OPTIONS is written verbatim into qdevice.pri.
 function(qt_generate_global_device_pri_file)
-    if(NOT CMAKE_CROSSCOMPILING)
+    if(NOT (CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS))
         return()
     endif()
 
@@ -877,7 +877,7 @@ function(qt_get_build_parts out_var)
         list(APPEND parts "tests")
     endif()
 
-    if(NOT CMAKE_CROSSCOMPILING OR QT_FORCE_BUILD_TOOLS)
+    if((NOT CMAKE_CROSSCOMPILING OR QT_FORCE_BUILD_TOOLS) AND NOT QT_FORCE_NO_TOOLS)
         list(APPEND parts "tools")
     endif()
 

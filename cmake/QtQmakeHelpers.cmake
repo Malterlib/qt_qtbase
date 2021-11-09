@@ -82,7 +82,7 @@ endfunction()
 # up the host qmake's properties for cross-compiling with this Qt
 # build.
 function(qt_generate_qmake_and_qtpaths_wrapper_for_target)
-    if(NOT CMAKE_CROSSCOMPILING)
+    if(NOT CMAKE_CROSSCOMPILING AND NOT QT_FORCE_NO_TOOLS)
         return()
     endif()
 

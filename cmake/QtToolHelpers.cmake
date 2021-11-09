@@ -500,7 +500,7 @@ endfunction()
 function(qt_check_if_tools_will_be_built)
     # By default, we build our own tools unless we're cross-building.
     set(need_target_rename FALSE)
-    if(CMAKE_CROSSCOMPILING)
+    if(CMAKE_CROSSCOMPILING OR QT_FORCE_NO_TOOLS)
         set(will_build_tools FALSE)
         if(QT_FORCE_BUILD_TOOLS)
             set(will_build_tools TRUE)
