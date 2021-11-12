@@ -181,6 +181,7 @@ public:
 
     bool isValid() const;
     QString errorString() const;
+    QString errorOriginalString() const;
 
     bool isEmpty() const;
     void clear();
