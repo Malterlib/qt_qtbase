@@ -3623,6 +3623,20 @@ QString QUrl::errorString() const
     return msg;
 }
 
+QString QUrl::errorOriginalString() const
+{
+    QString msg;
+    if (!d)
+        return msg;
+    
+    if (!d->error)
+        return msg;
+    
+    msg = d->error->source;
+    
+    return msg;
+}
+
 /*!
     \since 5.1
 
