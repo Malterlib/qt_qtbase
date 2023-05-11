@@ -422,7 +422,7 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
 
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, -1, 0, -paintDeviceHeight);
 
-    CGAffineTransformConcat(cgMatrix, oldTextMatrix);
+    [[maybe_unused]] auto Dummy = CGAffineTransformConcat(cgMatrix, oldTextMatrix);
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -SYNTHETIC_ITALIC_SKEW, 1, 0, 0));

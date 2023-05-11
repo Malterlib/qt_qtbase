@@ -856,6 +856,8 @@ public:
     { return (s1.size() == s2.size()) && QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) == 0; }
     friend bool operator< (const QString &s1, const QString &s2) noexcept
     { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
+    friend auto operator<=> (const QString &s1, const QString &s2) noexcept
+    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) <=> 0; }
     friend bool operator> (const QString &s1, const QString &s2) noexcept { return s2 < s1; }
     friend bool operator!=(const QString &s1, const QString &s2) noexcept { return !(s1 == s2); }
     friend bool operator<=(const QString &s1, const QString &s2) noexcept { return !(s1 > s2); }
@@ -865,6 +867,8 @@ public:
     { return (s1.size() == s2.size()) && QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) == 0; }
     friend bool operator< (const QString &s1, QLatin1String s2) noexcept
     { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
+    friend auto operator<=> (const QString &s1, QLatin1String s2) noexcept
+    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) <=> 0; }
     friend bool operator> (const QString &s1, QLatin1String s2) noexcept
     { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) > 0; }
     friend bool operator!=(const QString &s1, QLatin1String s2) noexcept { return !(s1 == s2); }
@@ -873,6 +877,7 @@ public:
 
     friend bool operator==(QLatin1String s1, const QString &s2) noexcept { return s2 == s1; }
     friend bool operator< (QLatin1String s1, const QString &s2) noexcept { return s2 > s1; }
+    friend auto operator<=> (QLatin1String s1, const QString &s2) noexcept { return 0 <=> (s2 <=> s1); }
     friend bool operator> (QLatin1String s1, const QString &s2) noexcept { return s2 < s1; }
     friend bool operator!=(QLatin1String s1, const QString &s2) noexcept { return s2 != s1; }
     friend bool operator<=(QLatin1String s1, const QString &s2) noexcept { return s2 >= s1; }
@@ -895,6 +900,7 @@ public:
     friend bool operator==(const QString &s1, const char16_t *s2) noexcept { return s1 == QStringView(s2); }
     friend bool operator!=(const QString &s1, const char16_t *s2) noexcept { return s1 != QStringView(s2); }
     friend bool operator< (const QString &s1, const char16_t *s2) noexcept { return s1 <  QStringView(s2); }
+    friend auto operator<=> (const QString &s1, const char16_t *s2) noexcept { return s1 <=> QStringView(s2); }
     friend bool operator> (const QString &s1, const char16_t *s2) noexcept { return s1 >  QStringView(s2); }
     friend bool operator<=(const QString &s1, const char16_t *s2) noexcept { return s1 <= QStringView(s2); }
     friend bool operator>=(const QString &s1, const char16_t *s2) noexcept { return s1 >= QStringView(s2); }
@@ -902,6 +908,7 @@ public:
     friend bool operator==(const char16_t *s1, const QString &s2) noexcept { return s2 == s1; }
     friend bool operator!=(const char16_t *s1, const QString &s2) noexcept { return s2 != s1; }
     friend bool operator< (const char16_t *s1, const QString &s2) noexcept { return s2 >  s1; }
+    friend auto operator<=> (const char16_t *s1, const QString &s2) noexcept { return 0 <=> (s2 <=> s1); }
     friend bool operator> (const char16_t *s1, const QString &s2) noexcept { return s2 <  s1; }
     friend bool operator<=(const char16_t *s1, const QString &s2) noexcept { return s2 >= s1; }
     friend bool operator>=(const char16_t *s1, const QString &s2) noexcept { return s2 <= s1; }

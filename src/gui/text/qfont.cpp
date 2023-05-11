@@ -1848,6 +1848,13 @@ bool QFont::operator<(const QFont &f) const
     return f1attrs < f2attrs;
 }
 
+std::weak_ordering QFont::operator<=>(const QFont &f) const
+{
+	return *this == f ? std::weak_ordering::equivalent
+		: *this < f  ? std::weak_ordering::less
+		: std::weak_ordering::greater
+	;
+}
 
 /*!
     Returns \c true if this font is different from \a f; otherwise
