@@ -213,6 +213,7 @@ public:
     bool operator==(const QFont &) const;
     bool operator!=(const QFont &) const;
     bool operator<(const QFont &) const;
+    std::weak_ordering operator<=>(const QFont &) const;
     operator QVariant() const;
     bool isCopyOf(const QFont &) const;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFont)
