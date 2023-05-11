@@ -770,40 +770,36 @@ public:
     static QString number(qulonglong, int base=10);
     static QString number(double, char format='g', int precision=6);
 
-    friend bool comparesEqual(const QString &s1, const QString &s2) noexcept
-    { return comparesEqual(QStringView(s1), QStringView(s2)); }
-    friend Qt::strong_ordering compareThreeWay(const QString &s1, const QString &s2) noexcept
-    { return compareThreeWay(QStringView(s1), QStringView(s2)); }
-    Q_DECLARE_STRONGLY_ORDERED(QString)
-
-    Q_WEAK_OVERLOAD
-    friend bool comparesEqual(const QString &s1, QUtf8StringView s2) noexcept
-    { return QtPrivate::equalStrings(s1, s2); }
-    Q_WEAK_OVERLOAD
-    friend Qt::strong_ordering compareThreeWay(const QString &s1, QUtf8StringView s2) noexcept
-    {
-        const int res = QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive);
-        return Qt::compareThreeWay(res, 0);
-    }
-    Q_DECLARE_STRONGLY_ORDERED(QString, QUtf8StringView, Q_WEAK_OVERLOAD)
-
-#ifdef __cpp_char8_t
-    friend bool comparesEqual(const QString &s1, const char8_t *s2) noexcept
-    { return comparesEqual(s1, QUtf8StringView(s2)); }
-    friend Qt::strong_ordering compareThreeWay(const QString &s1, const char8_t *s2) noexcept
-    { return compareThreeWay(s1, QUtf8StringView(s2)); }
-    Q_DECLARE_STRONGLY_ORDERED(QString, const char8_t *)
-#endif // __cpp_char8_t
-
-    friend bool comparesEqual(const QString &s1, QLatin1StringView s2) noexcept
+    friend bool operator==(const QString &s1, const QString &s2) noexcept
     { return (s1.size() == s2.size()) && QtPrivate::equalStrings(s1, s2); }
-    friend Qt::strong_ordering
-    compareThreeWay(const QString &s1, QLatin1StringView s2) noexcept
-    {
-        const int res = QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive);
-        return Qt::compareThreeWay(res, 0);
-    }
-    Q_DECLARE_STRONGLY_ORDERED(QString, QLatin1StringView)
+    friend bool operator< (const QString &s1, const QString &s2) noexcept
+    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
+    friend auto operator<=> (const QString &s1, const QString &s2) noexcept
+    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) <=> 0; }
+    friend bool operator> (const QString &s1, const QString &s2) noexcept { return s2 < s1; }
+    friend bool operator!=(const QString &s1, const QString &s2) noexcept { return !(s1 == s2); }
+    friend bool operator<=(const QString &s1, const QString &s2) noexcept { return !(s1 > s2); }
+    friend bool operator>=(const QString &s1, const QString &s2) noexcept { return !(s1 < s2); }
+
+    friend bool operator==(const QString &s1, QLatin1StringView s2) noexcept
+    { return (s1.size() == s2.size()) && QtPrivate::equalStrings(s1, s2); }
+    friend bool operator< (const QString &s1, QLatin1StringView s2) noexcept
+    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
+    friend auto operator<=> (const QString &s1, QLatin1StringView s2) noexcept
+    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) <=> 0; }
+    friend bool operator> (const QString &s1, QLatin1StringView s2) noexcept
+    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) > 0; }
+    friend bool operator!=(const QString &s1, QLatin1StringView s2) noexcept { return !(s1 == s2); }
+    friend bool operator<=(const QString &s1, QLatin1StringView s2) noexcept { return !(s1 > s2); }
+    friend bool operator>=(const QString &s1, QLatin1StringView s2) noexcept { return !(s1 < s2); }
+
+    friend bool operator==(QLatin1StringView s1, const QString &s2) noexcept { return s2 == s1; }
+    friend bool operator< (QLatin1StringView s1, const QString &s2) noexcept { return s2 > s1; }
+    friend auto operator<=> (QLatin1StringView s1, const QString &s2) noexcept { return 0 <=> (s2 <=> s1); }
+    friend bool operator> (QLatin1StringView s1, const QString &s2) noexcept { return s2 < s1; }
+    friend bool operator!=(QLatin1StringView s1, const QString &s2) noexcept { return s2 != s1; }
+    friend bool operator<=(QLatin1StringView s1, const QString &s2) noexcept { return s2 >= s1; }
+    friend bool operator>=(QLatin1StringView s1, const QString &s2) noexcept { return s2 <= s1; }
 
     // Check isEmpty() instead of isNull() for backwards compatibility.
     friend bool comparesEqual(const QString &s1, std::nullptr_t) noexcept
@@ -812,11 +808,21 @@ public:
     { return s1.isEmpty() ? Qt::strong_ordering::equivalent : Qt::strong_ordering::greater; }
     Q_DECLARE_STRONGLY_ORDERED(QString, std::nullptr_t)
 
-    friend bool comparesEqual(const QString &s1, const char16_t *s2) noexcept
-    { return comparesEqual(s1, QStringView(s2)); }
-    friend Qt::strong_ordering compareThreeWay(const QString &s1, const char16_t *s2) noexcept
-    { return compareThreeWay(s1, QStringView(s2)); }
-    Q_DECLARE_STRONGLY_ORDERED(QString, const char16_t *)
+    friend bool operator==(const QString &s1, const char16_t *s2) noexcept { return s1 == QStringView(s2); }
+    friend bool operator!=(const QString &s1, const char16_t *s2) noexcept { return s1 != QStringView(s2); }
+    friend bool operator< (const QString &s1, const char16_t *s2) noexcept { return s1 <  QStringView(s2); }
+    friend auto operator<=> (const QString &s1, const char16_t *s2) noexcept { return s1 <=> QStringView(s2); }
+    friend bool operator> (const QString &s1, const char16_t *s2) noexcept { return s1 >  QStringView(s2); }
+    friend bool operator<=(const QString &s1, const char16_t *s2) noexcept { return s1 <= QStringView(s2); }
+    friend bool operator>=(const QString &s1, const char16_t *s2) noexcept { return s1 >= QStringView(s2); }
+
+    friend bool operator==(const char16_t *s1, const QString &s2) noexcept { return s2 == s1; }
+    friend bool operator!=(const char16_t *s1, const QString &s2) noexcept { return s2 != s1; }
+    friend bool operator< (const char16_t *s1, const QString &s2) noexcept { return s2 >  s1; }
+    friend auto operator<=> (const char16_t *s1, const QString &s2) noexcept { return 0 <=> (s2 <=> s1); }
+    friend bool operator> (const char16_t *s1, const QString &s2) noexcept { return s2 <  s1; }
+    friend bool operator<=(const char16_t *s1, const QString &s2) noexcept { return s2 >= s1; }
+    friend bool operator>=(const char16_t *s1, const QString &s2) noexcept { return s2 <= s1; }
 
     // QChar <> QString
     friend bool comparesEqual(const QString &lhs, QChar rhs) noexcept
