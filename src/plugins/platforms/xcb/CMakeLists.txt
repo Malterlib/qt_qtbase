@@ -47,7 +47,6 @@ qt_internal_add_module(XcbQpaPrivate
     INCLUDE_DIRECTORIES
         gl_integrations
     PUBLIC_LIBRARIES
-        PkgConfig::XKB_COMMON_X11
         Qt::CorePrivate
         Qt::GuiPrivate
         XCB::CURSOR
