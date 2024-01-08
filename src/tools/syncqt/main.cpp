@@ -229,6 +229,8 @@ public:
 
     bool copy() const { return m_copy; }
 
+    bool relative() const { return m_relative; }
+
     bool minimal() const { return m_minimal; }
 
     bool showOnly() const { return m_showOnly; }
@@ -337,11 +339,17 @@ private:
                 };
 
         static const std::unordered_map<std::string, CommandLineOption<bool>> boolArgumentMap = {
-            { "-nonQt", { &m_isNonQtModule, true } }, { "-debug", { &m_debug, true } },
-            { "-help", { &m_printHelpOnly, true } },  { "-framework", { &m_isFramework, true } },
-            { "-internal", { &m_isInternal, true } }, { "-all", { &m_scanAllMode, true } },
-            { "-copy", { &m_copy, true } },           { "-minimal", { &m_minimal, true } },
-            { "-showonly", { &m_showOnly, true } },   { "-showOnly", { &m_showOnly, true } },
+            { "-nonQt", { &m_isNonQtModule, true } },
+            { "-debug", { &m_debug, true } },
+            { "-help", { &m_printHelpOnly, true } },
+            { "-framework", { &m_isFramework, true } },
+            { "-internal", { &m_isInternal, true } },
+            { "-all", { &m_scanAllMode, true } },
+            { "-copy", { &m_copy, true } },
+            { "-relative", { &m_relative, true } },
+            { "-minimal", { &m_minimal, true } },
+            { "-showonly", { &m_showOnly, true } },
+            { "-showOnly", { &m_showOnly, true } },
             { "-warningsAreErrors", { &m_warningsAreErrors, true } }
         };
 
@@ -493,6 +501,7 @@ private:
     std::set<std::string> m_generatedHeaders;
     bool m_scanAllMode = false;
     bool m_copy = false;
+    bool m_relative = false;
     bool m_isFramework = false;
     bool m_isNonQtModule = false;
     bool m_isInternal = false;
@@ -797,6 +806,13 @@ public:
             m_currentFileType |= ExportHeader;
     }
 
+    std::string maybeRelative(std::string filename, std::string base) {
+        if (m_commandLineArgs->relative())
+            return std::filesystem::relative(filename, base).generic_string();
+        else
+            return std::filesystem::absolute(filename).generic_string();
+    }
+
     [[nodiscard]] bool processHeader(const std::filesystem::path &headerFile)
     {
         // This regex filters any paths that contain the '3rdparty' directory.
@@ -854,7 +870,7 @@ public:
         std::filesystem::path headerFileRootName =
                 std::filesystem::weakly_canonical(headerFile, ec).root_name();
         std::string aliasedFilepath = !ec && headerFileRootName == m_outputRootName
-                ? std::filesystem::relative(headerFile, outputDir).generic_string()
+                ? maybeRelative(headerFile.generic_string(), outputDir)
                 : headerFile.generic_string();
         ec.clear();
 
@@ -1005,10 +1021,9 @@ public:
         // checkLineForSymbols(buffer, symbol);
         if (!symbol.empty() && symbol[symbol.size() - 1] != ';') {
             std::string relPath = m_currentFileInSourceDir
-                    ? std::filesystem::relative(m_currentFile, m_commandLineArgs->sourceDir())
-                              .string()
-                    : std::filesystem::relative(m_currentFile, m_commandLineArgs->binaryDir())
-                              .string();
+                ? maybeRelative(m_currentFile.generic_string(), m_commandLineArgs->sourceDir())
+                : maybeRelative(m_currentFile.generic_string(), m_commandLineArgs->binaryDir())
+            ;
 
             std::string versionStringRecord = "    *";
             size_t startPos = 0;
