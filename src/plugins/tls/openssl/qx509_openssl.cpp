@@ -28,6 +28,12 @@ namespace QTlsPrivate {
 
 namespace {
 
+#ifdef OPENSSL_IS_BORINGSSL
+static void call_free_func_legacy(OPENSSL_sk_free_func func, void *ptr) {
+  func(ptr);
+}
+#endif
+
 QByteArray asn1ObjectId(ASN1_OBJECT *object)
 {
     if (!object)
@@ -73,13 +79,18 @@ QMultiMap<QByteArray, QString> mapFromX509Name(X509_NAME *name)
 QDateTime dateTimeFromASN1(const ASN1_TIME *aTime)
 {
     QDateTime result;
+#ifdef OPENSSL_IS_BORINGSSL
+	int64_t lTime;
+    if (ASN1_TIME_to_posix(aTime, &lTime))
+        result = QDateTime::fromSecsSinceEpoch(lTime, QTimeZone::UTC);
+#else
     tm lTime;
-
     if (q_ASN1_TIME_to_tm(aTime, &lTime)) {
         QDate resDate(lTime.tm_year + 1900, lTime.tm_mon + 1, lTime.tm_mday);
         QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
         result = QDateTime(resDate, resTime, QTimeZone::UTC);
     }
+#endif
 
     return result;
 }
@@ -182,8 +193,13 @@ QVariant x509UnknownExtensionToValue(X509_EXTENSION *ext)
     if (meth->i2v) {
         STACK_OF(CONF_VALUE) *val = meth->i2v(meth, ext_internal, nullptr);
         const auto stackCleaner = qScopeGuard([val]{
-            if (val)
+            if (val) {
+#ifdef OPENSSL_IS_BORINGSSL
+                q_OPENSSL_sk_pop_free_ex((OPENSSL_STACK *)val, call_free_func_legacy, (OPENSSL_sk_free_func)q_X509V3_conf_free);
+#else
                 q_OPENSSL_sk_pop_free((OPENSSL_STACK *)val, (void(*)(void*))q_X509V3_conf_free);
+#endif
+			}
         });
 
         QVariantMap map;
@@ -481,7 +497,11 @@ X509CertificateOpenSSL::subjectAlternativeNames() const
         }
     }
 
+#ifdef OPENSSL_IS_BORINGSSL
+    q_OPENSSL_sk_pop_free_ex((OPENSSL_STACK*)altNames, call_free_func_legacy, (OPENSSL_sk_free_func)q_GENERAL_NAME_free);
+#else
     q_OPENSSL_sk_pop_free((OPENSSL_STACK*)altNames, reinterpret_cast<void(*)(void*)>(q_GENERAL_NAME_free));
+#endif
 
     return result;
 }
@@ -815,8 +835,12 @@ bool X509CertificateOpenSSL::importPkcs12(QIODevice *device, QSslKey *key, QSslC
     const auto x509Raii = qScopeGuard([x509]{q_X509_free(x509);});
     const auto keyRaii = qScopeGuard([pkey]{q_EVP_PKEY_free(pkey);});
     const auto caRaii = qScopeGuard([ca] {
+#ifdef OPENSSL_IS_BORINGSSL
+        q_OPENSSL_sk_pop_free_ex(reinterpret_cast<OPENSSL_STACK *>(ca),call_free_func_legacy, (OPENSSL_sk_free_func)q_X509_free);
+#else
         q_OPENSSL_sk_pop_free(reinterpret_cast<OPENSSL_STACK *>(ca),
                               reinterpret_cast<void (*)(void *)>(q_X509_free));
+#endif
     });
 
     // Convert to Qt types

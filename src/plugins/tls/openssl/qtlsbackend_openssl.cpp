@@ -110,8 +110,7 @@ bool QTlsBackendOpenSSL::ensureLibraryLoaded()
         q_SSL_load_error_strings();
         q_OpenSSL_add_all_algorithms();
 
-        s_indexForSSLExtraData = q_CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_SSL, 0L, nullptr, nullptr,
-                                                           nullptr, nullptr);
+        s_indexForSSLExtraData = SSL_get_ex_new_index(0, (void*)"QTlsBackendOpenSSL Index", nullptr, nullptr, nullptr);
 
         // Initialize OpenSSL's random seed.
         if (!q_RAND_status()) {
