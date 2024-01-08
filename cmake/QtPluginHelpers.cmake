@@ -486,14 +486,14 @@ function(qt_finalize_plugin target)
     get_target_property(target_type "${target}" TYPE)
     if(target_type STREQUAL STATIC_LIBRARY)
         if(arg_INSTALL_PATH)
-            qt_generate_prl_file(${target} "${arg_INSTALL_PATH}")
+            #qt_generate_prl_file(${target} "${arg_INSTALL_PATH}")
         endif()
 
         # There's no point in generating pri files for qml plugins.
         # We didn't do it in Qt5 times.
         get_target_property(plugin_type "${target}" QT_PLUGIN_TYPE)
         if(NOT plugin_type STREQUAL "qml_plugin")
-            qt_generate_plugin_pri_file("${target}")
+            #qt_generate_plugin_pri_file("${target}")
         endif()
     endif()
 endfunction()

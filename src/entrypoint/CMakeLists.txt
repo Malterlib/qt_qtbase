@@ -141,7 +141,7 @@ QT.entrypoint_implementation.module_config = staticlib v2 internal_module
 
     set(export_name "${INSTALL_CMAKE_NAMESPACE}EntryPointPrivateTargets")
     qt_install(TARGETS EntryPointImplementation EXPORT ${export_name})
-    qt_generate_prl_file(EntryPointImplementation "${INSTALL_LIBDIR}")
+    #qt_generate_prl_file(EntryPointImplementation "${INSTALL_LIBDIR}")
 endif()
 
 qt_internal_export_additional_targets_file(
