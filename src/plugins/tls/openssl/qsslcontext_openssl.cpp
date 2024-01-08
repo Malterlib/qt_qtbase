@@ -53,10 +53,12 @@ extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
 extern "C" int q_ssl_sess_set_new_cb(SSL *context, SSL_SESSION *session);
 #endif // TLS1_3_VERSION
 
+#ifndef OPENSSL_IS_BORINGSSL
 static inline QString msgErrorSettingBackendConfig(const QString &why)
 {
     return QSslSocket::tr("Error when setting the OpenSSL configuration (%1)").arg(why);
 }
+#endif
 
 static inline QString msgErrorSettingEllipticCurves(const QString &why)
 {
@@ -370,10 +372,17 @@ QT_WARNING_POP
         return;
     }
 
+#ifndef OPENSSL_IS_BORINGSSL
     // A nasty hacked OpenSSL using a level that will make our auto-tests fail:
     if (q_SSL_CTX_get_security_level(sslContext->ctx) > 1 && *forceSecurityLevel())
         q_SSL_CTX_set_security_level(sslContext->ctx, 1);
+#endif
 
+#ifdef OPENSSL_IS_BORINGSSL
+	long anyVersion = 0;
+    long minVersion = 0;
+    long maxVersion = 0;
+#else
     const long anyVersion =
 #if QT_CONFIG(dtls)
                             isDtls ? DTLS_ANY_VERSION : TLS_ANY_VERSION;
@@ -382,6 +391,7 @@ QT_WARNING_POP
 #endif // dtls
     long minVersion = anyVersion;
     long maxVersion = anyVersion;
+#endif
 
     switch (sslContext->sslConfiguration.protocol()) {
 QT_WARNING_PUSH
@@ -515,7 +525,7 @@ QT_WARNING_POP
     }
 
     const QByteArray tls13Ciphers = filterCiphers(ciphers, true);
-#ifdef TLS1_3_VERSION
+#if defined(TLS1_3_VERSION) && !defined(OPENSSL_IS_BORINGSSL)
     if (tls13Ciphers.size()) {
         if (!q_SSL_CTX_set_ciphersuites(sslContext->ctx, tls13Ciphers.data())) {
             sslContext->errorStr = QSslSocket::tr("Invalid or empty cipher list (%1)").arg(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
@@ -637,8 +647,7 @@ QT_WARNING_POP
                 first = false;
                 continue;
             }
-            q_SSL_CTX_ctrl(sslContext->ctx, SSL_CTRL_EXTRA_CHAIN_CERT, 0,
-                           q_X509_dup(reinterpret_cast<X509 *>(cert.handle())));
+            q_SSL_CTX_add_extra_chain_cert(sslContext->ctx, q_X509_dup(reinterpret_cast<X509 *>(cert.handle())));
         }
     }
 
@@ -729,7 +738,7 @@ QT_WARNING_POP
         curves.reserve(qcurves.size());
         for (const auto &sslCurve : qcurves)
             curves.push_back(sslCurve.id);
-        if (!q_SSL_CTX_ctrl(sslContext->ctx, SSL_CTRL_SET_CURVES, long(curves.size()), &curves[0])) {
+        if (!SSL_CTX_set1_curves(sslContext->ctx, &curves[0], curves.size())) {
             sslContext->errorStr = msgErrorSettingEllipticCurves(QTlsBackendOpenSSL::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
             return;
@@ -758,6 +767,7 @@ void QSslContext::applyBackendConfig(QSslContext *sslContext)
     }
 #endif // ocsp
 
+#ifndef OPENSSL_IS_BORINGSSL
     QSharedPointer<SSL_CONF_CTX> cctx(q_SSL_CONF_CTX_new(), &q_SSL_CONF_CTX_free);
     if (cctx) {
         q_SSL_CONF_CTX_set_ssl_ctx(cctx.data(), sslContext->ctx);
@@ -808,6 +818,7 @@ void QSslContext::applyBackendConfig(QSslContext *sslContext)
         sslContext->errorStr = msgErrorSettingBackendConfig(QSslSocket::tr("SSL_CONF_CTX_new() failed"));
         sslContext->errorCode = QSslError::UnspecifiedError;
     }
+#endif
 }
 
 QT_END_NAMESPACE

@@ -205,9 +205,16 @@ int q_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c);
 int q_EVP_PKEY_up_ref(EVP_PKEY *a);
 EVP_PKEY_CTX *q_EVP_PKEY_CTX_new(EVP_PKEY *pkey, ENGINE *e);
 void q_EVP_PKEY_CTX_free(EVP_PKEY_CTX *ctx);
+#ifndef OPENSSL_IS_BORINGSSL
 int q_EVP_PKEY_param_check(EVP_PKEY_CTX *ctx);
+#endif
 int q_OPENSSL_sk_num(OPENSSL_STACK *a);
+#ifdef OPENSSL_IS_BORINGSSL
+void q_OPENSSL_sk_pop_free_ex(OPENSSL_STACK *a, OPENSSL_sk_call_free_func b, OPENSSL_sk_free_func c);
+#else
 void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
+#endif
+
 OPENSSL_STACK *q_OPENSSL_sk_new_null();
 void q_OPENSSL_sk_push(OPENSSL_STACK *st, void *data);
 void q_OPENSSL_sk_free(OPENSSL_STACK *a);
@@ -217,7 +224,6 @@ qssloptions q_SSL_CTX_set_options(SSL_CTX *ctx, qssloptions op);
 int q_OPENSSL_init_ssl(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
 size_t q_SSL_get_client_random(SSL *a, unsigned char *out, size_t outlen);
 size_t q_SSL_SESSION_get_master_key(const SSL_SESSION *session, unsigned char *out, size_t outlen);
-int q_CRYPTO_get_ex_new_index(int class_index, long argl, void *argp, CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
 const SSL_METHOD *q_TLS_method();
 const SSL_METHOD *q_TLS_client_method();
 const SSL_METHOD *q_TLS_server_method();
@@ -255,7 +261,9 @@ unsigned long q_SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session)
 unsigned long q_SSL_set_options(SSL *s, unsigned long op);
 
 #ifdef TLS1_3_VERSION
+#ifndef OPENSSL_IS_BORINGSSL
 int q_SSL_CTX_set_ciphersuites(SSL_CTX *ctx, const char *str);
+#endif
 
 // The functions below do not really have to be ifdefed like this, but for now
 // they only used in TLS 1.3 handshake (and probably future versions).
@@ -270,8 +278,13 @@ using NewSessionCallback = int (*)(SSL *, SSL_SESSION *);
 void q_SSL_CTX_sess_set_new_cb(SSL_CTX *ctx, NewSessionCallback cb);
 int q_SSL_SESSION_is_resumable(const SSL_SESSION *s);
 
+#ifdef OPENSSL_IS_BORINGSSL
+#define q_SSL_CTX_set_session_cache_mode(ctx,m) \
+    SSL_CTX_set_session_cache_mode(ctx,m)
+#else
 #define q_SSL_CTX_set_session_cache_mode(ctx,m) \
     q_SSL_CTX_ctrl(ctx,SSL_CTRL_SET_SESS_CACHE_MODE,m,NULL)
+#endif
 
 #endif
 
@@ -317,17 +330,27 @@ void q_BIO_set_shutdown(BIO *a, int shut);
 const OCSP_CERTID *q_OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *x);
 #endif // ocsp
 
+#ifdef OPENSSL_IS_BORINGSSL
+#define q_SSL_CTX_set_min_proto_version(ctx, version) \
+        SSL_CTX_set_min_proto_version(ctx, version)
+
+#define q_SSL_CTX_set_max_proto_version(ctx, version) \
+        SSL_CTX_set_max_proto_version(ctx, version)
+#else
 #define q_SSL_CTX_set_min_proto_version(ctx, version) \
         q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, nullptr)
 
 #define q_SSL_CTX_set_max_proto_version(ctx, version) \
         q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, nullptr)
+#endif
 
 extern "C" {
 typedef int (*q_SSL_psk_use_session_cb_func_t)(SSL *, const EVP_MD *, const unsigned char **, size_t *,
                                                SSL_SESSION **);
 }
+#ifndef OPENSSL_IS_BORINGSSL
 void q_SSL_set_psk_use_session_callback(SSL *s, q_SSL_psk_use_session_cb_func_t);
+#endif
 // Here the content of the 1.1 header ends.
 
 bool q_resolveOpenSslSymbols();
@@ -335,7 +358,9 @@ long q_ASN1_INTEGER_get(ASN1_INTEGER *a);
 int q_ASN1_INTEGER_cmp(const ASN1_INTEGER *x, const ASN1_INTEGER *y);
 int q_ASN1_STRING_length(ASN1_STRING *a);
 int q_ASN1_STRING_to_UTF8(unsigned char **a, ASN1_STRING *b);
+#ifndef OPENSSL_IS_BORINGSSL
 int q_ASN1_TIME_to_tm(const ASN1_TIME *s, struct tm *tm);
+#endif
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);
 int q_BIO_free(BIO *a);
 BIO *q_BIO_new_mem_buf(void *a, int b);
@@ -392,8 +417,10 @@ EVP_PKEY *q_PEM_read_bio_PrivateKey(BIO *a, EVP_PKEY **b, pem_password_cb *c, vo
 
 int q_PEM_write_bio_PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
                                int e, pem_password_cb *f, void *g);
+#ifndef OPENSSL_IS_BORINGSSL
 int q_PEM_write_bio_PrivateKey_traditional(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
                                int e, pem_password_cb *f, void *g);
+#endif
 EVP_PKEY *q_PEM_read_bio_PUBKEY(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
 int q_PEM_write_bio_PUBKEY(BIO *a, EVP_PKEY *b);
 
@@ -402,12 +429,14 @@ int q_RAND_status();
 int q_RAND_bytes(unsigned char *b, int n);
 int q_SSL_accept(SSL *a);
 int q_SSL_clear(SSL *a);
-char *q_SSL_CIPHER_description(const SSL_CIPHER *a, char *b, int c);
+const char *q_SSL_CIPHER_description(const SSL_CIPHER *a, char *b, int c);
 int q_SSL_CIPHER_get_bits(const SSL_CIPHER *a, int *b);
 BIO *q_SSL_get_rbio(const SSL *s);
 int q_SSL_connect(SSL *a);
 int q_SSL_CTX_check_private_key(const SSL_CTX *a);
+#ifndef OPENSSL_IS_BORINGSSL
 long q_SSL_CTX_ctrl(SSL_CTX *a, int b, long c, void *d);
+#endif
 void q_SSL_CTX_free(SSL_CTX *a);
 SSL_CTX *q_SSL_CTX_new(const SSL_METHOD *a);
 int q_SSL_CTX_set_cipher_list(SSL_CTX *a, const char *b);
@@ -417,18 +446,26 @@ void q_SSL_CTX_set_verify_depth(SSL_CTX *a, int b);
 extern "C" {
 typedef void (*GenericCallbackType)();
 }
+#ifndef OPENSSL_IS_BORINGSSL
 long q_SSL_CTX_callback_ctrl(SSL_CTX *, int, GenericCallbackType);
+#endif
 int q_SSL_CTX_use_certificate(SSL_CTX *a, X509 *b);
 int q_SSL_CTX_use_certificate_file(SSL_CTX *a, const char *b, int c);
 int q_SSL_CTX_use_PrivateKey(SSL_CTX *a, EVP_PKEY *b);
 int q_SSL_CTX_use_PrivateKey_file(SSL_CTX *a, const char *b, int c);
 X509_STORE *q_SSL_CTX_get_cert_store(const SSL_CTX *a);
+#ifndef OPENSSL_IS_BORINGSSL
 SSL_CONF_CTX *q_SSL_CONF_CTX_new();
+#endif
+
+#ifndef OPENSSL_IS_BORINGSSL
 void q_SSL_CONF_CTX_free(SSL_CONF_CTX *a);
 void q_SSL_CONF_CTX_set_ssl_ctx(SSL_CONF_CTX *a, SSL_CTX *b);
 unsigned int q_SSL_CONF_CTX_set_flags(SSL_CONF_CTX *a, unsigned int b);
 int q_SSL_CONF_CTX_finish(SSL_CONF_CTX *a);
 int q_SSL_CONF_cmd(SSL_CONF_CTX *a, const char *b, const char *c);
+#endif
+
 void q_SSL_free(SSL *a);
 STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(const SSL *a);
 const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
@@ -515,7 +552,11 @@ DH *q_PEM_read_bio_DHparams(BIO *a, DH **b, pem_password_cb *c, void *d);
 #endif // OPENSSL_NO_DEPRECATED_3_0
 
 BIGNUM *q_BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
+#ifdef OPENSSL_IS_BORINGSSL
+#define q_SSL_CTX_set_tmp_dh(ctx, dh) SSL_CTX_set_tmp_dh(ctx, dh)
+#else
 #define q_SSL_CTX_set_tmp_dh(ctx, dh) q_SSL_CTX_ctrl((ctx), SSL_CTRL_SET_TMP_DH, 0, (char *)dh)
+#endif
 
 #ifndef OPENSSL_NO_EC
 // EC Diffie-Hellman support
@@ -526,7 +567,11 @@ size_t q_EC_get_builtin_curves(EC_builtin_curve *r, size_t nitems);
 int q_EC_curve_nist2nid(const char *name);
 #endif // OPENSSL_NO_EC
 
+#ifdef OPENSSL_IS_BORINGSSL
+#define q_SSL_get_server_tmp_key(ssl, key) SSL_get_server_tmp_key(ssl, key)
+#else
 #define q_SSL_get_server_tmp_key(ssl, key) q_SSL_ctrl((ssl), SSL_CTRL_GET_SERVER_TMP_KEY, 0, (char *)key)
+#endif
 
 // PKCS#12 support
 int q_PKCS12_parse(PKCS12 *p12, const char *pass, EVP_PKEY **pkey, X509 **cert, STACK_OF(X509) **ca);
@@ -535,7 +580,13 @@ void q_PKCS12_free(PKCS12 *pkcs12);
 
 #define q_BIO_get_mem_data(b, pp) (int)q_BIO_ctrl(b,BIO_CTRL_INFO,0,(char *)pp)
 #define q_BIO_pending(b) (int)q_BIO_ctrl(b,BIO_CTRL_PENDING,0,NULL)
+
+#ifdef OPENSSL_IS_BORINGSSL
+#define q_SSL_CTX_set_mode(ctx,op) SSL_CTX_set_mode(ctx, op)
+#else
 #define q_SSL_CTX_set_mode(ctx,op) q_SSL_CTX_ctrl((ctx),SSL_CTRL_MODE,(op),NULL)
+#endif
+
 #define q_sk_GENERAL_NAME_num(st) q_SKM_sk_num((st))
 #define q_sk_GENERAL_NAME_value(st, i) q_SKM_sk_value(GENERAL_NAME, (st), (i))
 
@@ -545,8 +596,15 @@ void q_GENERAL_NAME_free(GENERAL_NAME *a);
 #define q_sk_X509_value(st, i) q_SKM_sk_value(X509, (st), (i))
 #define q_sk_SSL_CIPHER_num(st) q_SKM_sk_num((st))
 #define q_sk_SSL_CIPHER_value(st, i) q_SKM_sk_value(SSL_CIPHER, (st), (i))
+
+#ifdef OPENSSL_IS_BORINGSSL
+#define q_SSL_CTX_add_extra_chain_cert(ctx,x509) \
+        SSL_CTX_add_extra_chain_cert(ctx,x509)
+#else
 #define q_SSL_CTX_add_extra_chain_cert(ctx,x509) \
         q_SSL_CTX_ctrl(ctx,SSL_CTRL_EXTRA_CHAIN_CERT,0,(char *)x509)
+#endif
+
 #define q_OpenSSL_add_all_algorithms() q_OPENSSL_add_all_algorithms_conf()
 
 #if OPENSSL_VERSION_MAJOR < 3
@@ -609,14 +667,18 @@ int q_SSL_get_ex_data_X509_STORE_CTX_idx();
 
 void q_BIO_set_flags(BIO *b, int flags);
 void q_BIO_clear_flags(BIO *b, int flags);
+#ifndef OPENSSL_IS_BORINGSSL
 void *q_BIO_get_ex_data(BIO *b, int idx);
 int q_BIO_set_ex_data(BIO *b, int idx, void *data);
+#endif
 
 #define q_BIO_set_retry_read(b) q_BIO_set_flags(b, (BIO_FLAGS_READ|BIO_FLAGS_SHOULD_RETRY))
 #define q_BIO_set_retry_write(b) q_BIO_set_flags(b, (BIO_FLAGS_WRITE|BIO_FLAGS_SHOULD_RETRY))
 #define q_BIO_clear_retry_flags(b) q_BIO_clear_flags(b, (BIO_FLAGS_RWS|BIO_FLAGS_SHOULD_RETRY))
+#ifndef OPENSSL_IS_BORINGSSL
 #define q_BIO_set_app_data(s,arg) q_BIO_set_ex_data(s,0,arg)
 #define q_BIO_get_app_data(s) q_BIO_get_ex_data(s,0)
+#endif
 
 #define q_SSL_set_tlsext_status_type(ssl, type) \
     q_SSL_ctrl((ssl), SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE, (type), nullptr)
@@ -654,7 +716,7 @@ int q_OCSP_id_cmp(OCSP_CERTID *a, OCSP_CERTID *b);
     q_SSL_ctrl(ssl, SSL_CTRL_GET_TLSEXT_STATUS_REQ_OCSP_RESP, 0, arg)
 
 #define q_SSL_CTX_set_tlsext_status_cb(ssl, cb) \
-    q_SSL_CTX_callback_ctrl(ssl, SSL_CTRL_SET_TLSEXT_STATUS_REQ_CB, GenericCallbackType(cb))
+    SSL_CTX_set_tlsext_status_cb(ssl, cb)
 
 # define q_SSL_set_tlsext_status_ocsp_resp(ssl, arg, arglen) \
     q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_STATUS_REQ_OCSP_RESP, arglen, arg)
@@ -671,8 +733,10 @@ void q_SSL_set_info_callback(SSL *ssl, void (*cb) (const SSL *ssl, int type, int
 const char *q_SSL_alert_type_string(int value);
 const char *q_SSL_alert_desc_string_long(int value);
 
+#ifndef OPENSSL_IS_BORINGSSL
 int q_SSL_CTX_get_security_level(const SSL_CTX *ctx);
 void q_SSL_CTX_set_security_level(SSL_CTX *ctx, int level);
+#endif
 
 // Here we have the ones that make difference between OpenSSL pre/post v3:
 #if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
@@ -724,7 +788,9 @@ DH *q_EVP_PKEY_get1_DH(EVP_PKEY *a);
 
 int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
 int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
+#ifndef OPENSSL_IS_BORINGSSL
 int q_EVP_PKEY_set1_DH(EVP_PKEY *a, DH *b);
+#endif
 
 int q_DH_bits(DH *dh);
 int q_RSA_bits(RSA *a);

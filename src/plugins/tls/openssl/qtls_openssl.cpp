@@ -225,6 +225,7 @@ static unsigned int q_ssl_psk_server_callback(SSL *ssl, const char *identity, un
 }
 
 #ifdef TLS1_3_VERSION
+#if OPENSSL_VERSION_NUMBER >= 0x10101006L && !defined(OPENSSL_IS_BORINGSSL)
 static unsigned q_ssl_psk_restore_client(SSL *ssl, const char *hint, char *identity, unsigned max_identity_len,
                                          unsigned char *psk, unsigned max_psk_len)
 {
@@ -273,6 +274,7 @@ static int q_ssl_psk_use_session_callback(SSL *ssl, const EVP_MD *md, const unsi
 
     return 1; // need to return 1 or else "the connection setup fails."
 }
+#endif
 
 int q_ssl_sess_set_new_cb(SSL *ssl, SSL_SESSION *session)
 {
@@ -1400,8 +1402,13 @@ bool TlsCryptographOpenSSL::initSslContext()
             // https://tools.ietf.org/html/rfc6066#section-3
             if (ace.endsWith('.'))
                 ace.chop(1);
+#ifdef OPENSSL_IS_BORINGSSL
+			if (!SSL_set_tlsext_host_name(ssl, ace.data()))
+                qCWarning(lcTlsBackend, "could not set SSL_set_tlsext_host_name, Server Name Indication disabled");
+#else
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.data()))
                 qCWarning(lcTlsBackend, "could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
+#endif
         }
     }
 
@@ -1438,7 +1445,7 @@ bool TlsCryptographOpenSSL::initSslContext()
     else if (mode == QSslSocket::SslServerMode)
         q_SSL_set_psk_server_callback(ssl, &q_ssl_psk_server_callback);
 
-#if OPENSSL_VERSION_NUMBER >= 0x10101006L
+#if OPENSSL_VERSION_NUMBER >= 0x10101006L && !defined(OPENSSL_IS_BORINGSSL)
     // Set the client callback for TLSv1.3 PSK
     if (mode == QSslSocket::SslClientMode
         && QSslSocket::sslLibraryBuildVersionNumber() >= 0x10101006L) {

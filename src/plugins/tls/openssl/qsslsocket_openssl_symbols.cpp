@@ -113,10 +113,18 @@ DEFINEFUNC2(int, BN_is_word, BIGNUM *a, a, BN_ULONG w, w, return 0, return)
 DEFINEFUNC(int, EVP_CIPHER_CTX_reset, EVP_CIPHER_CTX *c, c, return 0, return)
 DEFINEFUNC(int, EVP_PKEY_up_ref, EVP_PKEY *a, a, return 0, return)
 DEFINEFUNC2(EVP_PKEY_CTX *, EVP_PKEY_CTX_new, EVP_PKEY *pkey, pkey, ENGINE *e, e, return nullptr, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC(int, EVP_PKEY_param_check, EVP_PKEY_CTX *ctx, ctx, return 0, return)
+#endif
 DEFINEFUNC(void, EVP_PKEY_CTX_free, EVP_PKEY_CTX *ctx, ctx, return, return)
 DEFINEFUNC(int, OPENSSL_sk_num, OPENSSL_STACK *a, a, return -1, return)
+
+#ifdef OPENSSL_IS_BORINGSSL
+DEFINEFUNC3(void, OPENSSL_sk_pop_free_ex, OPENSSL_STACK *a, a, OPENSSL_sk_call_free_func b, b, OPENSSL_sk_free_func c, c, return, DUMMYARG)
+#else
 DEFINEFUNC2(void, OPENSSL_sk_pop_free, OPENSSL_STACK *a, a, void (*b)(void*), b, return, DUMMYARG)
+#endif
+
 DEFINEFUNC(OPENSSL_STACK *, OPENSSL_sk_new_null, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC2(void, OPENSSL_sk_push, OPENSSL_STACK *a, a, void *b, b, return, DUMMYARG)
 DEFINEFUNC(void, OPENSSL_sk_free, OPENSSL_STACK *a, a, return, DUMMYARG)
@@ -127,17 +135,20 @@ using info_callback = void (*) (const SSL *ssl, int type, int val);
 DEFINEFUNC2(void, SSL_set_info_callback, SSL *ssl, ssl, info_callback cb, cb, return, return)
 DEFINEFUNC(const char *, SSL_alert_type_string, int value, value, return nullptr, return)
 DEFINEFUNC(const char *, SSL_alert_desc_string_long, int value, value, return nullptr, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC(int, SSL_CTX_get_security_level, const SSL_CTX *ctx, ctx, return -1, return)
 DEFINEFUNC2(void, SSL_CTX_set_security_level, SSL_CTX *ctx, ctx, int level, level, return, return)
+#endif
 #ifdef TLS1_3_VERSION
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC2(int, SSL_CTX_set_ciphersuites, SSL_CTX *ctx, ctx, const char *str, str, return 0, return)
 DEFINEFUNC2(void, SSL_set_psk_use_session_callback, SSL *ssl, ssl, q_SSL_psk_use_session_cb_func_t callback, callback, return, DUMMYARG)
+#endif
 DEFINEFUNC2(void, SSL_CTX_sess_set_new_cb, SSL_CTX *ctx, ctx, NewSessionCallback cb, cb, return, return)
 DEFINEFUNC(int, SSL_SESSION_is_resumable, const SSL_SESSION *s, s, return 0, return)
 #endif
 DEFINEFUNC3(size_t, SSL_get_client_random, SSL *a, a, unsigned char *out, out, size_t outlen, outlen, return 0, return)
 DEFINEFUNC3(size_t, SSL_SESSION_get_master_key, const SSL_SESSION *ses, ses, unsigned char *out, out, size_t outlen, outlen, return 0, return)
-DEFINEFUNC6(int, CRYPTO_get_ex_new_index, int class_index, class_index, long argl, argl, void *argp, argp, CRYPTO_EX_new *new_func, new_func, CRYPTO_EX_dup *dup_func, dup_func, CRYPTO_EX_free *free_func, free_func, return -1, return)
 DEFINEFUNC2(unsigned long, SSL_set_options, SSL *ssl, ssl, unsigned long op, op, return 0, return)
 
 DEFINEFUNC(const SSL_METHOD *, TLS_method, DUMMYARG, DUMMYARG, return nullptr, return)
@@ -213,7 +224,9 @@ DEFINEFUNC(long, ASN1_INTEGER_get, ASN1_INTEGER *a, a, return 0, return)
 DEFINEFUNC2(int, ASN1_INTEGER_cmp, const ASN1_INTEGER *a, a, const ASN1_INTEGER *b, b, return 1, return)
 DEFINEFUNC(int, ASN1_STRING_length, ASN1_STRING *a, a, return 0, return)
 DEFINEFUNC2(int, ASN1_STRING_to_UTF8, unsigned char **a, a, ASN1_STRING *b, b, return 0, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC2(int, ASN1_TIME_to_tm, const ASN1_TIME *s, s, struct tm *tm, tm, return 0, return)
+#endif
 DEFINEFUNC4(long, BIO_ctrl, BIO *a, a, int b, b, long c, c, void *d, d, return -1, return)
 DEFINEFUNC(int, BIO_free, BIO *a, a, return 0, return)
 DEFINEFUNC2(BIO *, BIO_new_mem_buf, void *a, a, int b, b, return nullptr, return)
@@ -262,7 +275,9 @@ DEFINEFUNC(int, OBJ_obj2nid, const ASN1_OBJECT *a, a, return NID_undef, return)
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PrivateKey, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 
 DEFINEFUNC7(int, PEM_write_bio_PrivateKey, BIO *a, a, EVP_PKEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC7(int, PEM_write_bio_PrivateKey_traditional, BIO *a, a, EVP_PKEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
+#endif
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PUBKEY, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC2(int, PEM_write_bio_PUBKEY, BIO *a, a, EVP_PKEY *b, b, return 0, return)
 DEFINEFUNC2(void, RAND_seed, const void *a, a, int b, b, return, DUMMYARG)
@@ -270,16 +285,20 @@ DEFINEFUNC(int, RAND_status, void, DUMMYARG, return -1, return)
 DEFINEFUNC2(int, RAND_bytes, unsigned char *b, b, int n, n, return 0, return)
 DEFINEFUNC(int, SSL_accept, SSL *a, a, return -1, return)
 DEFINEFUNC(int, SSL_clear, SSL *a, a, return -1, return)
-DEFINEFUNC3(char *, SSL_CIPHER_description, const SSL_CIPHER *a, a, char *b, b, int c, c, return nullptr, return)
+DEFINEFUNC3(const char *, SSL_CIPHER_description, const SSL_CIPHER *a, a, char *b, b, int c, c, return nullptr, return)
 DEFINEFUNC2(int, SSL_CIPHER_get_bits, const SSL_CIPHER *a, a, int *b, b, return 0, return)
 DEFINEFUNC(BIO *, SSL_get_rbio, const SSL *s, s, return nullptr, return)
 DEFINEFUNC(int, SSL_connect, SSL *a, a, return -1, return)
 DEFINEFUNC(int, SSL_CTX_check_private_key, const SSL_CTX *a, a, return -1, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC4(long, SSL_CTX_ctrl, SSL_CTX *a, a, int b, b, long c, c, void *d, d, return -1, return)
+#endif
 DEFINEFUNC(void, SSL_CTX_free, SSL_CTX *a, a, return, DUMMYARG)
 DEFINEFUNC(SSL_CTX *, SSL_CTX_new, const SSL_METHOD *a, a, return nullptr, return)
 DEFINEFUNC2(int, SSL_CTX_set_cipher_list, SSL_CTX *a, a, const char *b, b, return -1, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC3(long, SSL_CTX_callback_ctrl, SSL_CTX *ctx, ctx, int dst, dst, GenericCallbackType cb, cb, return 0, return)
+#endif
 DEFINEFUNC(int, SSL_CTX_set_default_verify_paths, SSL_CTX *a, a, return -1, return)
 DEFINEFUNC3(void, SSL_CTX_set_verify, SSL_CTX *a, a, int b, b, int (*c)(int, X509_STORE_CTX *), c, return, DUMMYARG)
 DEFINEFUNC2(void, SSL_CTX_set_verify_depth, SSL_CTX *a, a, int b, b, return, DUMMYARG)
@@ -288,12 +307,18 @@ DEFINEFUNC3(int, SSL_CTX_use_certificate_file, SSL_CTX *a, a, const char *b, b, 
 DEFINEFUNC2(int, SSL_CTX_use_PrivateKey, SSL_CTX *a, a, EVP_PKEY *b, b, return -1, return)
 DEFINEFUNC3(int, SSL_CTX_use_PrivateKey_file, SSL_CTX *a, a, const char *b, b, int c, c, return -1, return)
 DEFINEFUNC(X509_STORE *, SSL_CTX_get_cert_store, const SSL_CTX *a, a, return nullptr, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC(SSL_CONF_CTX *, SSL_CONF_CTX_new, DUMMYARG, DUMMYARG, return nullptr, return);
+#endif
+
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC(void, SSL_CONF_CTX_free, SSL_CONF_CTX *a, a, return ,return);
 DEFINEFUNC2(void, SSL_CONF_CTX_set_ssl_ctx, SSL_CONF_CTX *a, a, SSL_CTX *b, b, return, return);
 DEFINEFUNC2(unsigned int, SSL_CONF_CTX_set_flags, SSL_CONF_CTX *a, a, unsigned int b, b, return 0, return);
 DEFINEFUNC(int, SSL_CONF_CTX_finish, SSL_CONF_CTX *a, a, return 0, return);
 DEFINEFUNC3(int, SSL_CONF_cmd, SSL_CONF_CTX *a, a, const char *b, b, const char *c, c, return 0, return);
+#endif
+
 DEFINEFUNC(void, SSL_free, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(STACK_OF(SSL_CIPHER) *, SSL_get_ciphers, const SSL *a, a, return nullptr, return)
 DEFINEFUNC(const SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return nullptr, return)
@@ -313,7 +338,9 @@ DEFINEFUNC(int, EVP_PKEY_base_id, EVP_PKEY *a, a, return NID_undef, return)
 DEFINEFUNC(long, SSL_get_verify_result, const SSL *a, a, return -1, return)
 DEFINEFUNC(SSL *, SSL_new, SSL_CTX *a, a, return nullptr, return)
 DEFINEFUNC(SSL_CTX *, SSL_get_SSL_CTX, SSL *a, a, return nullptr, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC4(long, SSL_ctrl, SSL *a, a, int cmd, cmd, long larg, larg, void *parg, parg, return -1, return)
+#endif
 DEFINEFUNC3(int, SSL_read, SSL *a, a, void *b, b, int c, c, return -1, return)
 DEFINEFUNC3(void, SSL_set_bio, SSL *a, a, BIO *b, b, BIO *c, c, return, DUMMYARG)
 DEFINEFUNC(void, SSL_set_accept_state, SSL *a, a, return, DUMMYARG)
@@ -422,8 +449,10 @@ DEFINEFUNC(const SSL_METHOD *, DTLS_client_method, DUMMYARG, DUMMYARG, return nu
 #endif // dtls
 DEFINEFUNC2(void, BIO_set_flags, BIO *b, b, int flags, flags, return, DUMMYARG)
 DEFINEFUNC2(void, BIO_clear_flags, BIO *b, b, int flags, flags, return, DUMMYARG)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC2(void *, BIO_get_ex_data, BIO *b, b, int idx, idx, return nullptr, return)
 DEFINEFUNC3(int, BIO_set_ex_data, BIO *b, b, int idx, idx, void *data, data, return -1, return)
+#endif
 
 DEFINEFUNC3(void *, CRYPTO_malloc, size_t num, num, const char *file, file, int line, line, return nullptr, return)
 
@@ -484,7 +513,9 @@ DEFINEFUNC3(int, EVP_PKEY_assign, EVP_PKEY *a, a, int b, b, void *r, r, return -
 
 DEFINEFUNC2(int, EVP_PKEY_set1_RSA, EVP_PKEY *a, a, RSA *b, b, return -1, return)
 DEFINEFUNC2(int, EVP_PKEY_set1_DSA, EVP_PKEY *a, a, DSA *b, b, return -1, return)
+#ifndef OPENSSL_IS_BORINGSSL
 DEFINEFUNC2(int, EVP_PKEY_set1_DH, EVP_PKEY *a, a, DH *b, b, return -1, return)
+#endif
 
 #ifndef OPENSSL_NO_EC
 
@@ -853,23 +884,33 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(AUTHORITY_INFO_ACCESS_free)
         RESOLVEFUNC(EVP_PKEY_up_ref)
         RESOLVEFUNC(EVP_PKEY_CTX_new)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(EVP_PKEY_param_check)
+#endif
         RESOLVEFUNC(EVP_PKEY_CTX_free)
         RESOLVEFUNC(OPENSSL_sk_new_null)
         RESOLVEFUNC(OPENSSL_sk_push)
         RESOLVEFUNC(OPENSSL_sk_free)
         RESOLVEFUNC(OPENSSL_sk_num)
+#ifdef OPENSSL_IS_BORINGSSL
+        RESOLVEFUNC(OPENSSL_sk_pop_free_ex)
+#else
         RESOLVEFUNC(OPENSSL_sk_pop_free)
+#endif
         RESOLVEFUNC(OPENSSL_sk_value)
         RESOLVEFUNC(SSL_CTX_set_options)
         RESOLVEFUNC(SSL_set_info_callback)
         RESOLVEFUNC(SSL_alert_type_string)
         RESOLVEFUNC(SSL_alert_desc_string_long)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(SSL_CTX_get_security_level)
         RESOLVEFUNC(SSL_CTX_set_security_level)
+#endif
 #ifdef TLS1_3_VERSION
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(SSL_CTX_set_ciphersuites)
         RESOLVEFUNC(SSL_set_psk_use_session_callback)
+#endif
         RESOLVEFUNC(SSL_CTX_sess_set_new_cb)
         RESOLVEFUNC(SSL_SESSION_is_resumable)
 #endif // TLS 1.3 or OpenSSL > 1.1.1
@@ -879,7 +920,6 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(SSL_session_reused)
         RESOLVEFUNC(SSL_get_session)
         RESOLVEFUNC(SSL_set_options)
-        RESOLVEFUNC(CRYPTO_get_ex_new_index)
         RESOLVEFUNC(TLS_method)
         RESOLVEFUNC(TLS_client_method)
         RESOLVEFUNC(TLS_server_method)
@@ -967,7 +1007,9 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(ASN1_INTEGER_cmp)
         RESOLVEFUNC(ASN1_STRING_length)
         RESOLVEFUNC(ASN1_STRING_to_UTF8)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(ASN1_TIME_to_tm)
+#endif
         RESOLVEFUNC(BIO_ctrl)
         RESOLVEFUNC(BIO_free)
         RESOLVEFUNC(BIO_new)
@@ -977,8 +1019,10 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(BIO_write)
         RESOLVEFUNC(BIO_set_flags)
         RESOLVEFUNC(BIO_clear_flags)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(BIO_set_ex_data)
         RESOLVEFUNC(BIO_get_ex_data)
+#endif
         RESOLVEFUNC(BN_num_bits)
         RESOLVEFUNC(BN_is_word)
         RESOLVEFUNC(BN_mod_word)
@@ -1019,7 +1063,9 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(OBJ_obj2nid)
         RESOLVEFUNC(PEM_read_bio_PrivateKey)
         RESOLVEFUNC(PEM_write_bio_PrivateKey)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(PEM_write_bio_PrivateKey_traditional)
+#endif
         RESOLVEFUNC(PEM_read_bio_PUBKEY)
         RESOLVEFUNC(PEM_write_bio_PUBKEY)
         RESOLVEFUNC(RAND_seed)
@@ -1033,7 +1079,9 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(SSL_CTX_free)
         RESOLVEFUNC(SSL_CTX_new)
         RESOLVEFUNC(SSL_CTX_set_cipher_list)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(SSL_CTX_callback_ctrl)
+#endif
         RESOLVEFUNC(SSL_CTX_set_default_verify_paths)
         RESOLVEFUNC(SSL_CTX_set_verify)
         RESOLVEFUNC(SSL_CTX_set_verify_depth)
@@ -1042,12 +1090,14 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(SSL_CTX_use_PrivateKey)
         RESOLVEFUNC(SSL_CTX_use_PrivateKey_file)
         RESOLVEFUNC(SSL_CTX_get_cert_store);
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(SSL_CONF_CTX_new);
         RESOLVEFUNC(SSL_CONF_CTX_free);
         RESOLVEFUNC(SSL_CONF_CTX_set_ssl_ctx);
         RESOLVEFUNC(SSL_CONF_CTX_set_flags);
         RESOLVEFUNC(SSL_CONF_CTX_finish);
         RESOLVEFUNC(SSL_CONF_cmd);
+#endif
         RESOLVEFUNC(SSL_accept)
         RESOLVEFUNC(SSL_clear)
         RESOLVEFUNC(SSL_connect)
@@ -1083,7 +1133,9 @@ bool q_resolveOpenSslSymbols()
 
         RESOLVEFUNC(EVP_PKEY_set1_RSA)
         RESOLVEFUNC(EVP_PKEY_set1_DSA)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(EVP_PKEY_set1_DH)
+#endif
 
         RESOLVEFUNC(EVP_PKEY_get1_DSA)
         RESOLVEFUNC(EVP_PKEY_get1_RSA)
@@ -1131,7 +1183,9 @@ bool q_resolveOpenSslSymbols()
         RESOLVEFUNC(SSL_get_verify_result)
         RESOLVEFUNC(SSL_new)
         RESOLVEFUNC(SSL_get_SSL_CTX)
+#ifndef OPENSSL_IS_BORINGSSL
         RESOLVEFUNC(SSL_ctrl)
+#endif
         RESOLVEFUNC(SSL_read)
         RESOLVEFUNC(SSL_set_accept_state)
         RESOLVEFUNC(SSL_set_bio)
