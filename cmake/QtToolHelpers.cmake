@@ -736,7 +736,9 @@ function(qt_internal_add_configure_time_tool target_name)
     )
 
     if(TARGET host_tools)
-        add_dependencies(host_tools "${target_name}_build")
+        if(QT_ENABLE_SYNCQT_DYNAMIC OR (NOT "${target_name}_build" STREQUAL "syncqt_build"))
+            add_dependencies(host_tools "${target_name}_build")
+        endif()
     endif()
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)

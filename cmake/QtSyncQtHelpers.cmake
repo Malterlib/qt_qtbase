@@ -149,98 +149,100 @@ function(qt_internal_target_sync_headers target module_headers module_headers_ge
     set(syncqt_args_rsp "${binary_dir_real}/${target}_syncqt_args")
     qt_configure_file(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
 
-    get_target_property(external_headers_dir ${target} _qt_external_headers_dir)
-    if(external_headers_dir)
-        if(NOT IS_ABSOLUTE "${external_headers_dir}")
-            get_filename_component(external_headers_dir "${external_headers_dir}" ABSOLUTE)
+    if(QT_ENABLE_SYNCQT_DYNAMIC)
+        get_target_property(external_headers_dir ${target} _qt_external_headers_dir)
+        if(external_headers_dir)
+            if(NOT IS_ABSOLUTE "${external_headers_dir}")
+                get_filename_component(external_headers_dir "${external_headers_dir}" ABSOLUTE)
+            endif()
+            if(EXISTS "${external_headers_dir}")
+                set(external_headers_dir_copy_cmd
+                    COMMAND
+                        ${CMAKE_COMMAND}
+                        -E copy_directory
+                        "${external_headers_dir}"
+                        "${module_build_interface_include_dir}"
+                )
+            endif()
         endif()
-        if(EXISTS "${external_headers_dir}")
-            set(external_headers_dir_copy_cmd
-                COMMAND
-                    ${CMAKE_COMMAND}
-                    -E copy_directory
-                    "${external_headers_dir}"
-                    "${module_build_interface_include_dir}"
+        add_custom_command(
+            OUTPUT
+                ${syncqt_outputs}
+            COMMAND
+                ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+                "@${syncqt_args_rsp}"
+                ${build_time_syncqt_arguments}
+            ${external_headers_dir_copy_cmd}
+            COMMAND
+                ${CMAKE_COMMAND} -E touch "${syncqt_timestamp}"
+            DEPENDS
+                ${syncqt_args_rsp}
+                ${module_headers}
+                ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+            COMMENT
+                "Running syncqt.cpp for module: ${module}"
+            VERBATIM
+        )
+
+        set(add_sync_headers_to_all "")
+        if(is_interface_lib)
+            set(add_sync_headers_to_all ALL)
+        endif()
+
+        add_custom_target(${target}_sync_headers
+            ${add_sync_headers_to_all}
+            DEPENDS
+                ${syncqt_outputs}
+        )
+        add_dependencies(sync_headers ${target}_sync_headers)
+
+        if(is_3rd_party_library)
+            add_dependencies(thirdparty_sync_headers ${target}_sync_headers)
+        endif()
+        # This target is required when building docs, to make all header files and their aliases
+        # available for qdoc.
+        # ${target}_sync_headers is added as dependency to make sure that
+        # ${target}_sync_all_public_headers is running after ${target}_sync_headers, when building docs.
+        set(syncqt_all_args "${common_syncqt_arguments};-all")
+        list(JOIN syncqt_all_args "\n" syncqt_all_args_string)
+        set(syncqt_all_args_rsp "${binary_dir_real}/${target}_syncqt_all_args")
+        qt_configure_file(OUTPUT "${syncqt_all_args_rsp}" CONTENT "${syncqt_all_args_string}")
+        add_custom_target(${target}_sync_all_public_headers
+            COMMAND
+                ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+                "@${syncqt_all_args_rsp}"
+            ${external_headers_dir_copy_cmd}
+            DEPENDS
+                ${module_headers}
+                ${syncqt_all_args_rsp}
+                ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+                ${target}_sync_headers
+            VERBATIM
+        )
+
+        if(NOT TARGET sync_all_public_headers)
+            add_custom_target(sync_all_public_headers)
+        endif()
+        add_dependencies(sync_all_public_headers ${target}_sync_all_public_headers)
+
+        if(NOT is_3rd_party_library AND NOT is_framework)
+            # Install all the CaMeL style aliases of header files from the staging directory in one rule
+            qt_install(DIRECTORY "${syncqt_staging_dir}/"
+                DESTINATION "${module_install_interface_include_dir}"
             )
         endif()
-    endif()
-    add_custom_command(
-        OUTPUT
-            ${syncqt_outputs}
-        COMMAND
-            ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
-            "@${syncqt_args_rsp}"
-            ${build_time_syncqt_arguments}
-        ${external_headers_dir_copy_cmd}
-        COMMAND
-            ${CMAKE_COMMAND} -E touch "${syncqt_timestamp}"
-        DEPENDS
-            ${syncqt_args_rsp}
-            ${module_headers}
-            ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
-        COMMENT
-            "Running syncqt.cpp for module: ${module}"
-        VERBATIM
-    )
 
-    set(add_sync_headers_to_all "")
-    if(is_interface_lib)
-        set(add_sync_headers_to_all ALL)
-    endif()
-
-    add_custom_target(${target}_sync_headers
-        ${add_sync_headers_to_all}
-        DEPENDS
-            ${syncqt_outputs}
-    )
-    add_dependencies(sync_headers ${target}_sync_headers)
-
-    if(is_3rd_party_library)
-        add_dependencies(thirdparty_sync_headers ${target}_sync_headers)
-    endif()
-    # This target is required when building docs, to make all header files and their aliases
-    # available for qdoc.
-    # ${target}_sync_headers is added as dependency to make sure that
-    # ${target}_sync_all_public_headers is running after ${target}_sync_headers, when building docs.
-    set(syncqt_all_args "${common_syncqt_arguments};-all")
-    list(JOIN syncqt_all_args "\n" syncqt_all_args_string)
-    set(syncqt_all_args_rsp "${binary_dir_real}/${target}_syncqt_all_args")
-    qt_configure_file(OUTPUT "${syncqt_all_args_rsp}" CONTENT "${syncqt_all_args_string}")
-    add_custom_target(${target}_sync_all_public_headers
-        COMMAND
-            ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
-            "@${syncqt_all_args_rsp}"
-        ${external_headers_dir_copy_cmd}
-        DEPENDS
-            ${module_headers}
-            ${syncqt_all_args_rsp}
-            ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
-            ${target}_sync_headers
-        VERBATIM
-    )
-
-    if(NOT TARGET sync_all_public_headers)
-        add_custom_target(sync_all_public_headers)
-    endif()
-    add_dependencies(sync_all_public_headers ${target}_sync_all_public_headers)
-
-    if(NOT is_3rd_party_library AND NOT is_framework)
-        # Install all the CaMeL style aliases of header files from the staging directory in one rule
-        qt_install(DIRECTORY "${syncqt_staging_dir}/"
-            DESTINATION "${module_install_interface_include_dir}"
-        )
-    endif()
-
-    if(NOT is_interface_lib)
-        set_property(TARGET ${target}
-            APPEND PROPERTY AUTOGEN_TARGET_DEPENDS "${target}_sync_headers")
-    endif()
-    add_dependencies(${target} "${target}_sync_headers")
+        if(NOT is_interface_lib)
+            set_property(TARGET ${target}
+                APPEND PROPERTY AUTOGEN_TARGET_DEPENDS "${target}_sync_headers")
+        endif()
+        add_dependencies(${target} "${target}_sync_headers")
 
 
-    get_target_property(private_module_target ${target} _qt_private_module_target_name)
-    if(private_module_target)
-        add_dependencies(${private_module_target} "${target}_sync_headers")
+        get_target_property(private_module_target ${target} _qt_private_module_target_name)
+        if(private_module_target)
+            add_dependencies(${private_module_target} "${target}_sync_headers")
+        endif()
     endif()
 
     # Run sync Qt first time at configure step to make all header files available for the code model
@@ -296,6 +298,10 @@ function(qt_internal_collect_sync_header_dependencies out_var skip_non_existing)
 endfunction()
 
 function(qt_internal_add_sync_header_dependencies target)
+    if(NOT QT_ENABLE_SYNCQT_DYNAMIC)
+        return()
+    endif()
+
     qt_internal_collect_sync_header_dependencies(sync_headers_targets FALSE ${ARGN})
     if(sync_headers_targets)
         add_dependencies(${target} ${sync_headers_targets})
