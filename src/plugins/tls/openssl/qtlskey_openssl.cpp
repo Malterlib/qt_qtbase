@@ -282,8 +282,13 @@ QByteArray TlsKeyOpenSSL::toPem(const QByteArray &passPhrase) const
 #else
 
 #define write_pubkey(alg, key) q_PEM_write_bio_PUBKEY(bio, genericKey)
+#ifndef OPENSSL_IS_BORINGSSL
+#define write_privatekey(alg, key) \
+    q_PEM_write_bio_PrivateKey(bio, genericKey, cipher, (uchar *)passPhrase.data(), passPhrase.size(), nullptr, nullptr)
+#else
 #define write_privatekey(alg, key) \
     q_PEM_write_bio_PrivateKey_traditional(bio, genericKey, cipher, (uchar *)passPhrase.data(), passPhrase.size(), nullptr, nullptr)
+#endif
 
 #endif // OPENSSL_NO_DEPRECATED_3_0
 
@@ -303,7 +308,7 @@ QByteArray TlsKeyOpenSSL::toPem(const QByteArray &passPhrase) const
             fail = true;
         }
     } else if (algorithm() == QSsl::Dh) {
-#ifdef OPENSSL_NO_DEPRECATED_3_0
+#if defined(OPENSSL_NO_DEPRECATED_3_0) || defined(OPENSSL_IS_BORINGSSL)
         EVP_PKEY *result = genericKey;
 #else
         EVP_PKEY *result = q_EVP_PKEY_new();
