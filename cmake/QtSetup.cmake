@@ -153,7 +153,7 @@ if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
                 set(__qt_default_prefix "/usr/local/")
             endif()
             string(APPEND __qt_default_prefix
-                "Qt-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+                "Qt-NotVersioned")
         endif()
         set(CMAKE_INSTALL_PREFIX ${__qt_default_prefix} CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)

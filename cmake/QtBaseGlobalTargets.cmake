@@ -127,10 +127,10 @@ add_library(Qt::GlobalConfig ALIAS GlobalConfig)
 add_library(GlobalConfigPrivate INTERFACE)
 target_link_libraries(GlobalConfigPrivate INTERFACE GlobalConfig)
 target_include_directories(GlobalConfigPrivate INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}>
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore>
-    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}>
-    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}/QtCore>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/V>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/V/QtCore>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/V>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/V/QtCore>
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 

@@ -959,7 +959,7 @@ the different base name for the module info variables.")
     endif()
 
     set("${result}_versioned_include_dir"
-        "${${result}_include_name}/${PROJECT_VERSION}")
+        "${${result}_include_name}/V")
     set("${result}_versioned_inner_include_dir"
         "${${result}_versioned_include_dir}/${${result}_include_name}")
     set("${result}_private_include_dir"
