@@ -125,10 +125,10 @@ qt_internal_create_wrapper_scripts()
 qt_internal_add_platform_internal_target(GlobalConfigPrivate)
 target_link_libraries(GlobalConfigPrivate INTERFACE GlobalConfig)
 target_include_directories(GlobalConfigPrivate INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}>
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/${PROJECT_VERSION}/QtCore>
-    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}>
-    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}/QtCore>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/V>
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/QtCore/V/QtCore>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/V>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/V/QtCore>
 )
 
 qt_internal_setup_public_platform_target()
