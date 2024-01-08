@@ -178,21 +178,24 @@ function(qt_internal_target_sync_headers target
     set(syncqt_args_rsp "${binary_dir_real}/${target}_syncqt_args")
     qt_configure_file(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
 
-    get_target_property(external_headers_dir ${target} _qt_external_headers_dir)
-    if(external_headers_dir)
-        if(NOT IS_ABSOLUTE "${external_headers_dir}")
-            get_filename_component(external_headers_dir "${external_headers_dir}" ABSOLUTE)
-        endif()
-        if(EXISTS "${external_headers_dir}")
-            set(external_headers_dir_copy_cmd
-                COMMAND
-                    ${CMAKE_COMMAND}
-                    -E copy_directory
-                    "${external_headers_dir}"
-                    "${module_build_interface_include_dir}"
-            )
+    if(QT_ENABLE_SYNCQT_DYNAMIC)
+        get_target_property(external_headers_dir ${target} _qt_external_headers_dir)
+        if(external_headers_dir)
+            if(NOT IS_ABSOLUTE "${external_headers_dir}")
+                get_filename_component(external_headers_dir "${external_headers_dir}" ABSOLUTE)
+            endif()
+            if(EXISTS "${external_headers_dir}")
+                set(external_headers_dir_copy_cmd
+                    COMMAND
+                        ${CMAKE_COMMAND}
+                        -E copy_directory
+                        "${external_headers_dir}"
+                        "${module_build_interface_include_dir}"
+                )
+            endif()
         endif()
     endif()
+
     add_custom_command(
         OUTPUT
             ${syncqt_outputs}
@@ -334,6 +337,10 @@ function(qt_internal_collect_sync_header_dependencies out_var skip_non_existing)
 endfunction()
 
 function(qt_internal_add_sync_header_dependencies target)
+    if(NOT QT_ENABLE_SYNCQT_DYNAMIC)
+        return()
+    endif()
+
     qt_internal_collect_sync_header_dependencies(sync_headers_targets FALSE ${ARGN})
     if(sync_headers_targets)
         add_dependencies(${target} ${sync_headers_targets})
