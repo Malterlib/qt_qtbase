@@ -44,10 +44,18 @@
 #if defined(X509_NAME)
 #undef X509_NAME
 #endif
+#if defined(PKCS7_SIGNER_INFO)
+#undef PKCS7_SIGNER_INFO
+#endif
+#if defined(X509_EXTENSIONS)
+#undef X509_EXTENSIONS
+#endif
 #endif // Q_OS_WIN
+
 
 // This file is included in several *.cpp files and provides different
 // openssl declarations where they are needed.
+
 #include <openssl/asn1.h>
 #include <openssl/bio.h>
 #include <openssl/bn.h>
