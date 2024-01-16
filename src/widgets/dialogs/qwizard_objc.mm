@@ -4,7 +4,6 @@
 #include "qwizard.h"
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#if defined(Q_OS_MACOS)
 #include <AppKit/AppKit.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
@@ -12,8 +11,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#ifdef Q_OS_MACOS
-QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
+QPixmap QWizardPrivate_findDefaultBackgroundPixmap()
 {
     auto *keyboardAssistantURL = [NSWorkspace.sharedWorkspace
         URLForApplicationWithBundleIdentifier:@"com.apple.KeyboardSetupAssistant"];
@@ -26,6 +24,5 @@ QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
 
     return QPixmap();
 }
-#endif
 
 QT_END_NAMESPACE

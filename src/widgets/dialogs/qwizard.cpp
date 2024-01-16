@@ -28,10 +28,7 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qvarlengtharray.h"
-#if defined(Q_OS_MACOS)
-#include <AppKit/AppKit.h>
-#include <QtGui/private/qcoregraphics_p.h>
-#elif QT_CONFIG(style_windowsvista)
+#if QT_CONFIG(style_windowsvista)
 #include "qwizard_win_p.h"
 #include "qtimer.h"
 #endif
@@ -501,6 +498,10 @@ protected:
 #endif
 };
 
+#ifdef Q_OS_MACOS
+    QPixmap QWizardPrivate_findDefaultBackgroundPixmap();
+#endif
+
 class QWizardPrivate : public QDialogPrivate
 {
     Q_DECLARE_PUBLIC(QWizard)
@@ -544,9 +545,6 @@ public:
     void _q_updateButtonStates();
     void _q_handleFieldObjectDestroyed(QObject *);
     void setStyle(QStyle *style);
-#ifdef Q_OS_MACOS
-    static QPixmap findDefaultBackgroundPixmap();
-#endif
 
     PageMap pageMap;
     QList<QWizardField> fields;
@@ -2826,7 +2824,7 @@ QPixmap QWizard::pixmap(WizardPixmap which) const
     Q_ASSERT(uint(which) < NPixmaps);
 #ifdef Q_OS_MACOS
     if (which == BackgroundPixmap && d->defaultPixmaps[BackgroundPixmap].isNull())
-        d->defaultPixmaps[BackgroundPixmap] = d->findDefaultBackgroundPixmap();
+        d->defaultPixmaps[BackgroundPixmap] = QWizardPrivate_findDefaultBackgroundPixmap();
 #endif
     return d->defaultPixmaps[which];
 }
