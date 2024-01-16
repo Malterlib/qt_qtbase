@@ -685,13 +685,10 @@ if(QT_FEATURE_wizard)
             dialogs/qwizard.cpp dialogs/qwizard.h
     )
 
-    if(APPLE)
-        set_source_files_properties(dialogs/qwizard.cpp
-            PROPERTIES
-                LANGUAGE OBJCXX
-                SKIP_PRECOMPILE_HEADERS ON
-        )
-    endif()
+    qt_internal_extend_target(Widgets CONDITION APPLE
+        SOURCES
+            dialogs/qwizard_objc.mm
+    )
 
     qt_internal_extend_target(Widgets CONDITION WIN32
         SOURCES

@@ -1721,22 +1721,6 @@ void QWizardPrivate::setStyle(QStyle *style)
         it.value()->setStyle(style);
 }
 
-#ifdef Q_OS_MACOS
-QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
-{
-    auto *keyboardAssistantURL = [NSWorkspace.sharedWorkspace
-        URLForApplicationWithBundleIdentifier:@"com.apple.KeyboardSetupAssistant"];
-    auto *keyboardAssistantBundle = [NSBundle bundleWithURL:keyboardAssistantURL];
-    auto *assistantBackground = [keyboardAssistantBundle imageForResource:@"Background"];
-    auto size = QSizeF::fromCGSize(assistantBackground.size);
-    static const QSizeF expectedSize(242, 414);
-    if (size == expectedSize)
-        return qt_mac_toQPixmap(assistantBackground, size);
-
-    return QPixmap();
-}
-#endif
-
 #if QT_CONFIG(style_windowsvista)
 void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 {
