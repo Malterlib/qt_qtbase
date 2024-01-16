@@ -21,7 +21,7 @@ QT_WARNING_DISABLE_CLANG("-Wdeprecated-copy")
 QT_WARNING_POP
 
 #include <qmath.h>
-#include <QVulkanFunctions>
+#include "../qvulkanfunctions.h"
 #include <QtGui/qwindow.h>
 #include <optional>
 
