@@ -112,7 +112,7 @@ function(qt_internal_add_linker_version_script target)
         endif()
 
         set(infile "${CMAKE_CURRENT_BINARY_DIR}/${target}.version.in")
-        set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.version")
+        set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target}.version.out")
 
         file(GENERATE OUTPUT "${infile}" CONTENT "${contents}")
 
@@ -126,6 +126,7 @@ function(qt_internal_add_linker_version_script target)
             -P "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
         )
         set(generator_dependencies
+            "${infile}"
             "${arg_PRIVATE_CONTENT_FILE}"
             "${QT_CMAKE_DIR}/QtGenerateVersionScript.cmake"
         )
