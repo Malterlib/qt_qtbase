@@ -56,7 +56,7 @@ qt_internal_extend_target(QTlsBackendOpenSSLPlugin CONDITION WIN32
 )
 
 if(QT_FEATURE_openssl_linked)
-    target_link_libraries(QTlsBackendOpenSSLPlugin PRIVATE WrapOpenSSL::WrapOpenSSL)
+    #target_link_libraries(QTlsBackendOpenSSLPlugin PRIVATE WrapOpenSSL::WrapOpenSSL)
 else()
     qt_internal_add_target_include_dirs(QTlsBackendOpenSSLPlugin
                                         WrapOpenSSLHeaders::WrapOpenSSLHeaders)
