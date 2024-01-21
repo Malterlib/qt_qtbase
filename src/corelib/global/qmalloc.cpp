@@ -14,6 +14,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if 0
+
 void *qMallocAligned(size_t size, size_t alignment)
 {
     return qReallocAligned(nullptr, size, 0, alignment);
@@ -75,5 +77,7 @@ void qFreeAligned(void *ptr)
     void **ptr2 = static_cast<void **>(ptr);
     free(ptr2[-1]);
 }
+
+#endif
 
 QT_END_NAMESPACE
