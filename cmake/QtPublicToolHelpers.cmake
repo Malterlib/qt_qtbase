@@ -46,6 +46,9 @@ function(__qt_internal_get_tool_imported_location out_var tool)
 endfunction()
 
 function(_qt_internal_generate_tool_command_wrapper)
+    # Disable
+    return()
+
     get_property(is_called GLOBAL PROPERTY _qt_internal_generate_tool_command_wrapper_called)
     if(NOT CMAKE_HOST_WIN32 OR is_called)
         return()
