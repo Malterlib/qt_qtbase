@@ -22,7 +22,7 @@
 
 #include <QtGui/qpagelayout.h>
 
-#include <ui_qpagesetupwidget.h>
+#include <dialogs/ui_qpagesetupwidget.h>
 
 QT_REQUIRE_CONFIG(printdialog);
 
