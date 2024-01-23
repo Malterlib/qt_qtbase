@@ -15,7 +15,7 @@
 #include "qprintdialog.h"
 #include "qstringconverter.h"
 #include "qdialogbuttonbox.h"
-#include <ui_qpagesetupwidget.h>
+#include <dialogs/ui_qpagesetupwidget.h>
 
 #include <QtPrintSupport/qprinter.h>
 

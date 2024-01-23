@@ -37,7 +37,7 @@
 #endif
 #include <qapplication.h>
 #include <qstylepainter.h>
-#include "ui_qfiledialog.h"
+#include "dialogs/ui_qfiledialog.h"
 #if defined(Q_OS_UNIX)
 #include <pwd.h>
 #include <unistd.h> // for pathconf() on OS X

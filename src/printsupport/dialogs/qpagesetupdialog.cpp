@@ -6,6 +6,8 @@
 
 #include <QtPrintSupport/qprinter.h>
 
+#include "dialogs/ui_qpagesetupwidget.h"
+
 QT_BEGIN_NAMESPACE
 
 /*!
