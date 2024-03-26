@@ -95,8 +95,6 @@ qt_internal_extend_target(BundledFreetype CONDITION UNIX
 qt_internal_extend_target(BundledFreetype CONDITION QT_FEATURE_png
     DEFINES
         FT_CONFIG_OPTION_USE_PNG
-    LIBRARIES
-        WrapPNG::WrapPNG
 )
 
 qt_internal_extend_target(BundledFreetype CONDITION QT_FEATURE_system_zlib

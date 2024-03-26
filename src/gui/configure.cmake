@@ -923,7 +923,7 @@ qt_feature("jpeg" PRIVATE
 qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE VALUE "1")
 qt_feature("system-jpeg" PRIVATE
     LABEL "  Using system libjpeg"
-    CONDITION QT_FEATURE_jpeg AND JPEG_FOUND
+    CONDITION QT_FEATURE_jpeg
     ENABLE INPUT_libjpeg STREQUAL 'system'
     DISABLE INPUT_libjpeg STREQUAL 'qt'
 )
@@ -935,7 +935,7 @@ qt_feature_definition("png" "QT_NO_IMAGEFORMAT_PNG" NEGATE)
 qt_feature("system-png" PRIVATE
     LABEL "  Using system libpng"
     AUTODETECT QT_FEATURE_system_zlib
-    CONDITION QT_FEATURE_png AND WrapSystemPNG_FOUND
+    CONDITION QT_FEATURE_png
     ENABLE INPUT_libpng STREQUAL 'system'
     DISABLE INPUT_libpng STREQUAL 'qt'
 )
