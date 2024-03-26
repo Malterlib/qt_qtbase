@@ -529,8 +529,6 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_movie
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_png
     SOURCES
         image/qpnghandler.cpp image/qpnghandler_p.h
-    LIBRARIES
-        WrapPNG::WrapPNG
 )
 
 qt_internal_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND MINGW)) AND (GCC_VERSION___equals___8.1.0)

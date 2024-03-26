@@ -18,7 +18,6 @@ qt_internal_add_plugin(QJpegPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        WrapJpeg::WrapJpeg
 )
 
 # Fails to build on Windows with a static Qt, PCH enabled and
