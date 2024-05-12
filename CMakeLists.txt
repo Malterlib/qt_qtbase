@@ -79,6 +79,12 @@ project(QtBase
     LANGUAGES CXX C ASM
 )
 
+find_package(Threads)
+
+if(TARGET Threads::Threads)
+    set_property(TARGET Threads::Threads PROPERTY IMPORTED_GLOBAL TRUE)
+endif()
+
 # Should this Qt be static or dynamically linked?
 option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
 set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
