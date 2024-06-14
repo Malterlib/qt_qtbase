@@ -130,10 +130,17 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
                     if (tableInterface) {
                         auto *tableElement = [QMacAccessibilityElement elementWithInterface:table];
                         Q_ASSERT(tableElement);
+                        if (!tableElement->rows
+                         || int(tableElement->rows.count) <= m_rowIndex
+                         || int(tableElement->rows.count) != tableInterface->rowCount()) {
+                            [tableElement updateTableModel];
+                        }
+
                         Q_ASSERT(tableElement->rows);
                         Q_ASSERT(int(tableElement->rows.count) > m_rowIndex);
+
                         auto *rowElement = tableElement->rows[m_rowIndex];
-                        if (!rowElement->columns) {
+                        if (!rowElement->columns || int(rowElement->columns.count) != tableInterface->columnCount()) {
                             rowElement->columns = [rowElement populateTableRow:rowElement->columns
                                                               count:tableInterface->columnCount()];
                         }
@@ -212,6 +219,10 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (NSMutableArray *)populateTableArray:(NSMutableArray *)array role:(NSAccessibilityRole)role count:(int)count
 {
     if (QAccessibleInterface *iface = self.qtInterface) {
+        if (array && int(array.count) != count) {
+            [array release];
+            array = nil;
+        }
         if (!array) {
             array = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:count];
             [array retain];
@@ -242,6 +253,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (NSMutableArray *)populateTableRow:(NSMutableArray *)array count:(int)count
 {
     Q_ASSERT(synthesizedRole == NSAccessibilityRowRole);
+    if (array && int(array.count) != count) {
+        [array release];
+        array = nil;
+    }
+
     if (!array) {
         array = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:count];
         [array retain];
@@ -499,7 +515,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             else if (QAccessibleTableCellInterface *cell = iface->tableCellInterface())
                 rowIndex = cell->rowIndex();
             Q_ASSERT(tableElement->rows);
-            if (rowIndex > int([tableElement->rows count]))
+            if (rowIndex > int([tableElement->rows count]) || rowIndex == -1)
                 return nil;
             QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
             return NSAccessibilityUnignoredAncestor(rowElement);
