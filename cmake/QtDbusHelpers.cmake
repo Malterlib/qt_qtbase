@@ -68,7 +68,7 @@ function(qt_create_qdbusxml2cpp_command target infile)
     endif()
 
     add_custom_command(OUTPUT "${header_file_full}" "${source_file_full}"
-                       COMMAND ${tool_path} ${arg_FLAGS} "${option}"
+                       COMMAND ${tool_path} "-C" "${CMAKE_CURRENT_BINARY_DIR}/${header_file}" ${arg_FLAGS} "${option}"
                                "${header_file}:${source_file}" "${absolute_in_file_path}"
                        DEPENDS "${absolute_in_file_path}" ${tool_path}
                        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
