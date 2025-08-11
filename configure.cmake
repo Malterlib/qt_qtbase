@@ -681,7 +681,7 @@ qt_feature("framework" PUBLIC
     AUTODETECT ON
     # If changing this, please align with logic in
     # qt_internal_setup_cmake_config_postfix.
-    CONDITION APPLE
+    CONDITION APPLE AND BUILD_SHARED_LIBS
 )
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
 qt_feature_config("framework" QMAKE_PUBLIC_QT_CONFIG

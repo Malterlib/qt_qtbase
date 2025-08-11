@@ -148,11 +148,7 @@ macro(qt_internal_set_configure_from_ide)
     # - Qt Creator, detected by QTC_RUN environment variable
     # - CLion, detected by CLION_IDE environment variable
     # - Visual Studio Code, detected by VSCODE_CLI environment variable
-    if("$ENV{QTC_RUN}" OR "$ENV{CLION_IDE}" OR "$ENV{VSCODE_CLI}")
-        set(QT_INTERNAL_CONFIGURE_FROM_IDE TRUE CACHE INTERNAL "Configuring Qt Project from IDE")
-    else()
-        set(QT_INTERNAL_CONFIGURE_FROM_IDE FALSE CACHE INTERNAL "Configuring Qt Project from IDE")
-    endif()
+    set(QT_INTERNAL_CONFIGURE_FROM_IDE TRUE CACHE INTERNAL "Configuring Qt Project from IDE")
 endmacro()
 
 macro(qt_internal_set_sync_headers_at_configure_time)
