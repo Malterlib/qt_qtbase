@@ -10,10 +10,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if __has_include(<bit>) && __cplusplus > 201703L
 #include <bit>
-#endif
-#include <type_traits>
 
 #ifdef Q_CC_MSVC
 #include <intrin.h>

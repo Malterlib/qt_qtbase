@@ -255,10 +255,17 @@ void objc_autoreleasePoolPop(void *pool);
 
 QT_BEGIN_NAMESPACE
 
+#ifdef DMalterlibNontrackedFree
+extern "C"
+{
+    void nontracked_free(void *__ptr);
+}
+#endif
+
 QMacAutoReleasePool::QMacAutoReleasePool()
     : pool(objc_autoreleasePoolPush())
 {
-#ifdef QT_DEBUG
+#if defined(QT_DEBUG) && 0 // Disable, this is too slow
     static const bool debugAutoReleasePools = qEnvironmentVariableIsSet("QT_DARWIN_DEBUG_AUTORELEASEPOOLS");
     if (!debugAutoReleasePools)
         return;
@@ -291,7 +298,13 @@ QMacAutoReleasePool::QMacAutoReleasePool()
             free(className);
 
             if (symbolName != info.dli_sname)
+            {
+#ifdef DMalterlibNontrackedFree
+                nontracked_free((char*)symbolName);
+#else
                 free((char*)symbolName);
+#endif
+            }
         }
     }
 
