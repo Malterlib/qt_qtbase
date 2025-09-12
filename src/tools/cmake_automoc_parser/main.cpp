@@ -31,9 +31,63 @@ using namespace Qt::StringLiterals;
 using AutoGenHeaderMap = QMap<QString, QString>;
 using AutoGenSourcesList = QList<QString>;
 
+namespace
+{
+    struct PathHelpers
+    {
+        PathHelpers(QDir const &basePath)
+            : basePath(basePath)
+        {
+            std::string ReplacePathsString;
+            if (auto *pValue = std::getenv("QT_TOOLS_REPLACE_PATHS"))
+                ReplacePathsString = pValue;
+
+            auto SplitItem = QString::fromStdString(";");
+            auto SplitEquals = QString::fromStdString("=");
+
+            if (!ReplacePathsString.empty())
+            {
+                auto replaceSplit = QString::fromStdString(ReplacePathsString).split(SplitItem);
+                for (auto &replace : replaceSplit)
+                {
+                    if (replace.isEmpty())
+                        continue;
+
+                    auto split = replace.split(SplitEquals);
+                    if (split.size() != 2)
+                        continue;
+                    auto Key = split[0];
+                    auto Value = split[1];
+
+
+                    ReplacePaths[Key] = Value;
+                }
+            }
+        }
+
+        QString CollapseRelativePath(QString const &string)
+        {
+            QString returnValue = string;
+            for (auto &mapping : ReplacePaths)
+                returnValue = returnValue.replace(mapping.first, mapping.second);
+
+            returnValue = basePath.cleanPath(basePath.absoluteFilePath(returnValue));
+
+            return returnValue;
+        }
+
+        QDir basePath;
+        std::map<QString, QString> ReplacePaths;
+    };
+}
+
 static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &sources,
                                 QStringList &headerExts, const QString &autoGenInfoJsonPath)
 {
+    QFileInfo fileInfo(autoGenInfoJsonPath);
+
+    PathHelpers pathHelpers(fileInfo.absoluteDir());
+
     QFile file(autoGenInfoJsonPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         fprintf(stderr, "Could not open: %s\n", qPrintable(autoGenInfoJsonPath));
@@ -74,7 +128,7 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
             // Array[0] : header path
             // Array[2] : Location of the generated moc file for this header
             // if no source file includes it
-            headers.insert(entry_array[0].toString(), entry_array[2].toString());
+            headers.insert(pathHelpers.CollapseRelativePath(entry_array[0].toString()), entry_array[2].toString());
         }
     }
 
@@ -82,7 +136,7 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
     for (const QJsonValue value : sourcesArray) {
         QJsonArray entry_array = value.toArray();
         if (entry_array.size() > 1) {
-            sources.push_back(entry_array[0].toString());
+            sources.push_back(pathHelpers.CollapseRelativePath(entry_array[0].toString()));
         }
     }
 

@@ -2,6 +2,10 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#ifdef DMalterlibQtFeatures
+#include <Mib/Core/Core>
+#endif
+
 #include <depfile_shared.h>
 #include "preprocessor.h"
 #include "moc.h"
@@ -15,6 +19,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#include <iostream>
 
 #include <qcoreapplication.h>
 #include <qcommandlineoption.h>
@@ -252,6 +257,11 @@ int runMoc(int argc, char **argv)
     noIncludeOption.setDescription(QStringLiteral("Do not generate an #include statement."));
     parser.addOption(noIncludeOption);
 
+#ifdef DMalterlibQtFeatures
+    QCommandLineOption idsDependencyOption(QStringLiteral("d"), QStringLiteral("Output an ids dependency file with <name>."), QStringLiteral("name"));
+    parser.addOption(idsDependencyOption);
+#endif
+
     QCommandLineOption pathPrefixOption(QStringLiteral("p"));
     pathPrefixOption.setDescription(QStringLiteral("Path prefix for included file."));
     pathPrefixOption.setValueName(QStringLiteral("path"));
@@ -475,6 +485,10 @@ int runMoc(int argc, char **argv)
             return 1;
         }
     } else {
+#ifdef DMalterlibQtFeatures
+        g_Tracker.f_AddInputFile(fg_MalterlibStrFromQt(filename));
+#endif
+
         in.setFileName(filename);
         if (!in.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "moc: cannot open %s: %s\n", qPrintable(filename), qPrintable(in.errorString()));
@@ -573,6 +587,9 @@ int runMoc(int argc, char **argv)
                         strerror(fopen_errno));
             }
         }
+#ifdef DMalterlibQtFeatures
+        g_Tracker.f_AddOutputFile(fg_MalterlibStrFromQt(output));
+#endif
     } else { // use stdout
         out.reset(stdout);
         outputToFile = false;
@@ -588,6 +605,14 @@ int runMoc(int argc, char **argv)
     }
 
     out.reset();
+
+#ifdef DMalterlibQtFeatures
+    if (parser.isSet(idsDependencyOption))
+    {
+        CStr OutputName = fg_MalterlibStrFromQt(parser.value(idsDependencyOption));
+        g_Tracker.f_WriteDependencyFile(OutputName);
+    }
+#endif
 
     if (parser.isSet(depFileOption)) {
         // 4. write a Make-style dependency file (can also be consumed by Ninja).
