@@ -30,6 +30,14 @@
 # elif defined(QT_PLATFORM_UIKIT)
 #  include <UIKit/UIKit.h>
 # endif
+#else
+#  if defined(Q_OS_MACOS)
+     Q_FORWARD_DECLARE_OBJC_CLASS(NSImage);
+     Q_FORWARD_DECLARE_OBJC_CLASS(NSColor);
+#  endif
+#  if defined(QT_PLATFORM_UIKIT)
+     Q_FORWARD_DECLARE_OBJC_CLASS(UIImage);
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -46,6 +54,7 @@ Q_GUI_EXPORT QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
 QT_END_NAMESPACE
 
 // @compatibility_alias doesn't work with categories or their methods
+#if defined(Q_OS_MACOS) && defined(__OBJC__) && defined(__cplusplus)
 #define imageFromQImage QT_MANGLE_NAMESPACE(imageFromQImage)
 #define imageFromQIcon QT_MANGLE_NAMESPACE(imageFromQIcon)
 
@@ -58,6 +67,8 @@ QT_END_NAMESPACE
                                             withMode:(QT_PREPEND_NAMESPACE(QIcon)::Mode)mode
                                            withState:(QT_PREPEND_NAMESPACE(QIcon)::State)state;
 @end
+#endif  // Q_OS_MACOS && __OBJC__ && __cplusplus
+
 QT_BEGIN_NAMESPACE
 
 #endif
