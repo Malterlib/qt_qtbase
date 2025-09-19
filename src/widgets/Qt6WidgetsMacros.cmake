@@ -261,7 +261,9 @@ function(qt6_add_ui target)
             set(remove_command "remove_directory")
         endif()
 
-        add_custom_command(OUTPUT ${outfile}
+        get_filename_component(outfile_directory ${outfile}/.. ABSOLUTE)
+
+        add_custom_command(OUTPUT ${outfile} "/DIR:${outfile_directory}"
             DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::uic
             COMMAND ${CMAKE_COMMAND} -E ${remove_command} "${file_ui_folder}/${include_folder}"
             COMMAND ${CMAKE_COMMAND} -E make_directory ${inc_dir_to_create}
