@@ -406,28 +406,6 @@ if(QT_FEATURE_libstdcpp_assertions)
     target_compile_definitions(PlatformCommonInternal INTERFACE _GLIBCXX_ASSERTIONS)
 endif()
 
-if(QT_FEATURE_libcpp_hardening)
-    string(JOIN "" hardening_flags
-        "$<$<NOT:$<STREQUAL:"
-            "$<TARGET_PROPERTY:"
-                "${QT_CMAKE_EXPORT_NAMESPACE}::PlatformCommonInternal,"
-                "_qt_internal_cmake_generator"
-            ">,"
-            "Xcode"
-        ">>:"
-            "_LIBCPP_HARDENING_MODE=$<IF:$<CONFIG:Debug>,"
-                "_LIBCPP_HARDENING_MODE_EXTENSIVE,"
-                "_LIBCPP_HARDENING_MODE_FAST"
-            ">"
-        ">"
-    )
-    set_target_properties(PlatformCommonInternal
-        PROPERTIES
-            _qt_internal_cmake_generator "${CMAKE_GENERATOR}"
-    )
-    target_compile_definitions(PlatformCommonInternal INTERFACE "${hardening_flags}")
-endif()
-
 if(QT_FEATURE_relro_now_linker)
     qt_internal_platform_link_options(PlatformCommonInternal INTERFACE "-Wl,-z,relro,-z,now")
 endif()
