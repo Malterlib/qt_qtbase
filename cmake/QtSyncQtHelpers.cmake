@@ -11,6 +11,7 @@ function(qt_internal_target_sync_headers target
         module_headers_generated
         module_headers_exclude_from_docs
     )
+    
     if(NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt)
         message(FATAL_ERROR "${QT_CMAKE_EXPORT_NAMESPACE}::syncqt is not a target.")
     endif()
@@ -177,7 +178,30 @@ function(qt_internal_target_sync_headers target
     list(JOIN syncqt_args "\n" syncqt_args_string)
     set(syncqt_args_rsp "${binary_dir_real}/${target}_syncqt_args")
     qt_configure_file(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
+    # --- Kör endast Core vid configure, och slå av alla build-time syncqt-mål ---
+    if(NOT QT_ENABLE_SYNCQT_DYNAMIC)
+      if(target MATCHES "^(Core(_A)?|Gui(_A)?|Network(_A)?|DBus(_A)?|Svg(Widgets)?|OpenGL(Widgets)?|Sql|ShaderTools|Tools|Widgets|Help|PrintSupport|StateMachine|Concurrent|PacketProtocol(Private)?|Test|Scxml(GlobalPrivate)?|Qml.*|Quick.*|UiPlugin|Designer|UiTools)$")
+        # Hämta sökvägen till configure-time syncqt-exen (IMPORTED target)
+        get_target_property(_syncqt_exe ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt IMPORTED_LOCATION)
+        if(NOT _syncqt_exe)
+          message(FATAL_ERROR "syncqt tool is not available at configure time")
+        endif()
 
+        # Kör syncqt en gång för Core så att privata alias (t.ex. qcore_mac_p.h) skapas.
+        # Använder samma args som skulle använts i build-steget.
+        execute_process(
+          COMMAND "${_syncqt_exe}" "@${syncqt_args_rsp}" ${build_time_syncqt_arguments}
+          WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+          RESULT_VARIABLE _syncqt_res
+        )
+        if(NOT _syncqt_res EQUAL 0)
+          message(FATAL_ERROR "syncqt (configure-time) failed for ${target} with code ${_syncqt_res}")
+        endif()
+      endif()
+
+      # Viktigt: skapa INGA _sync_headers / _sync_all_public_headers mål i buildsystemet.
+      return()
+    endif()
     get_target_property(external_headers_dir ${target} _qt_external_headers_dir)
     if(external_headers_dir)
         if(NOT IS_ABSOLUTE "${external_headers_dir}")
@@ -238,24 +262,32 @@ function(qt_internal_target_sync_headers target
     list(JOIN syncqt_all_args "\n" syncqt_all_args_string)
     set(syncqt_all_args_rsp "${binary_dir_real}/${target}_syncqt_all_args")
     qt_configure_file(OUTPUT "${syncqt_all_args_rsp}" CONTENT "${syncqt_all_args_string}")
+    # --- Minimal Qml fix: se till att bara ett mål äger syncqt-generatorn ---
+    # Standard: "all_public_headers" beror INTE på "_sync_headers" (som i 6.9.2),
+    # men för Qml gör vi det – och tar samtidigt bort module_headers_for_docs.
+    set(_sync_all_depends
+        ${syncqt_all_args_rsp}
+        ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+    )
+    set(_need_sync_headers_dep FALSE)
+    if(target STREQUAL "Qml")
+        set(_need_sync_headers_dep TRUE)
+    else()
+        list(PREPEND _sync_all_depends ${module_headers_for_docs})
+    endif()
+
     add_custom_target(${target}_sync_all_public_headers
         COMMAND
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
             "@${syncqt_all_args_rsp}"
         ${external_headers_dir_copy_cmd}
         DEPENDS
-            # Note, we don't depend anymore on ${target}_sync_headers so that we don't bring
-            # in the headers that are usually excluded from docs.
-            # This means if someone manually calls
-            # `ninja sync_all_public_headers Gui_sync_headers` it will cause havoc due to two
-            # syncqt calls accessing the same files concurrently. This is an edge case that should
-            # not happen, but it ends up happening, we will have to implement some kind of lock
-            # file mechanism.
-            ${module_headers_for_docs}
-            ${syncqt_all_args_rsp}
-            ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+            ${_sync_all_depends}
         VERBATIM
     )
+    if(_need_sync_headers_dep)
+        add_dependencies(${target}_sync_all_public_headers ${target}_sync_headers)
+    endif()
 
     if(NOT TARGET sync_all_public_headers)
         add_custom_target(sync_all_public_headers)
@@ -334,6 +366,9 @@ function(qt_internal_collect_sync_header_dependencies out_var skip_non_existing)
 endfunction()
 
 function(qt_internal_add_sync_header_dependencies target)
+    if(NOT QT_ENABLE_SYNCQT_DYNAMIC)
+        return()
+    endif()
     qt_internal_collect_sync_header_dependencies(sync_headers_targets FALSE ${ARGN})
     if(sync_headers_targets)
         add_dependencies(${target} ${sync_headers_targets})
