@@ -180,9 +180,12 @@ function(qt_internal_target_sync_headers target
     qt_configure_file(OUTPUT "${syncqt_args_rsp}" CONTENT "${syncqt_args_string}")
     # --- Kör endast Core vid configure, och slå av alla build-time syncqt-mål ---
     if(NOT QT_ENABLE_SYNCQT_DYNAMIC)
-      if(target MATCHES "^(Core(_A)?|Gui(_A)?|Network(_A)?|DBus(_A)?|Svg(Widgets)?|OpenGL(Widgets)?|Sql|ShaderTools|Tools|Widgets|Help|PrintSupport|StateMachine|Concurrent|PacketProtocol(Private)?|Test|Scxml(GlobalPrivate)?|Qml.*|Quick.*|UiPlugin|Designer|UiTools)$")
+      if(target MATCHES "^(Core(_A)?|Gui(_A)?|Network(_A)?|DBus(_A)?|Svg(Widgets)?|OpenGL(Widgets)?|Sql|ShaderTools|Tools|Widgets|Help|PrintSupport|StateMachine|Concurrent|PacketProtocol(Private)?|Test|Scxml(GlobalPrivate)?|Qml.*|Quick.*|UiPlugin|Designer|UiTools|ActiveQt|Ax(Container|Server|Base|BasePrivate))$")
         # Hämta sökvägen till configure-time syncqt-exen (IMPORTED target)
         get_target_property(_syncqt_exe ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt IMPORTED_LOCATION)
+        if(NOT EXISTS "${_syncqt_exe}")
+          message(FATAL_ERROR "syncqt tool not found at: ${_syncqt_exe}")
+        endif()
         if(NOT _syncqt_exe)
           message(FATAL_ERROR "syncqt tool is not available at configure time")
         endif()
@@ -241,12 +244,14 @@ function(qt_internal_target_sync_headers target
     if(is_interface_lib)
         set(add_sync_headers_to_all ALL)
     endif()
+    if(NOT TARGET ${target}_sync_headers)
 
-    add_custom_target(${target}_sync_headers
-        ${add_sync_headers_to_all}
-        DEPENDS
-            ${syncqt_outputs}
-    )
+        add_custom_target(${target}_sync_headers
+            ${add_sync_headers_to_all}
+            DEPENDS
+                ${syncqt_outputs}
+        )
+    endif()
     add_dependencies(sync_headers ${target}_sync_headers)
     set_target_properties(${target}
         PROPERTIES _qt_internal_sync_headers_target ${target}_sync_headers)
@@ -275,16 +280,18 @@ function(qt_internal_target_sync_headers target
     else()
         list(PREPEND _sync_all_depends ${module_headers_for_docs})
     endif()
+    if(NOT TARGET ${target}_sync_all_public_headers)
 
-    add_custom_target(${target}_sync_all_public_headers
-        COMMAND
-            ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
-            "@${syncqt_all_args_rsp}"
-        ${external_headers_dir_copy_cmd}
-        DEPENDS
-            ${_sync_all_depends}
-        VERBATIM
-    )
+        add_custom_target(${target}_sync_all_public_headers
+            COMMAND
+                ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
+                "@${syncqt_all_args_rsp}"
+            ${external_headers_dir_copy_cmd}
+            DEPENDS
+                ${_sync_all_depends}
+            VERBATIM
+        )
+    endif()
     if(_need_sync_headers_dep)
         add_dependencies(${target}_sync_all_public_headers ${target}_sync_headers)
     endif()
