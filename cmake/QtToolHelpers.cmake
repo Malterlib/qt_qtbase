@@ -836,12 +836,19 @@ function(qt_internal_add_configure_time_tool target_name)
     )
 
     if(TARGET host_tools)
-        # Se alltid till att syncqt och qsb hamnar i host_tools
-        if("${target_name}" STREQUAL "syncqt" OR "${target_name}" STREQUAL "qsb")
+        if(TARGET "${target_name}_build")
             add_dependencies(host_tools "${target_name}_build")
-        # Övriga tools bara när dynamic är på
-        elseif(QT_ENABLE_SYNCQT_DYNAMIC)
-            add_dependencies(host_tools "${target_name}_build")
+        elseif(TARGET "${target_name}")
+            add_dependencies(host_tools "${target_name}")
+        endif()
+
+        # (Kör bara när vi är på qsb-varvet; blir idempotent p.g.a. guardsen ovan.)
+        if("${target_name}" STREQUAL "qsb")
+            if(TARGET qsb_build)
+                add_dependencies(host_tools qsb_build)
+            elseif(TARGET qsb)
+                add_dependencies(host_tools qsb)
+            endif()
         endif()
     endif()
 
