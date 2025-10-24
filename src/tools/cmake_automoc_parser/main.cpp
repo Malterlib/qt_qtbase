@@ -158,6 +158,8 @@ using ParseCacheMap = QMap<QString, ParseCacheEntry>;
 
 static bool readParseCache(ParseCacheMap &entries, const QString &parseCacheFilePath)
 {
+    QFileInfo parseInfo(parseCacheFilePath);
+    PathHelpers pathHelpers(parseInfo.absoluteDir());
 
     QFile file(parseCacheFilePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -203,7 +205,7 @@ static bool readParseCache(ParseCacheMap &entries, const QString &parseCacheFile
                 mocIncludes = {};
                 mmc_key_found = false;
             }
-            source = line;
+            source = pathHelpers.CollapseRelativePath(line);
         } else if (line.startsWith(mmcKey)) {
             mmc_key_found = true;
         } else if (line.startsWith(miuKey)) {
