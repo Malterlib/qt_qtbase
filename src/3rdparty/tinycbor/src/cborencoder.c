@@ -498,8 +498,8 @@ static CborError create_container(CborEncoder *encoder, CborEncoder *container, 
     container->remaining = length + 1;      /* overflow ok on CborIndefiniteLength */
 
     cbor_static_assert((int)CborIteratorFlag_ContainerIsMap_ == (int)CborIteratorFlag_ContainerIsMap);
-    cbor_static_assert(((MapType << MajorTypeShift) & CborIteratorFlag_ContainerIsMap) == CborIteratorFlag_ContainerIsMap);
-    cbor_static_assert(((ArrayType << MajorTypeShift) & CborIteratorFlag_ContainerIsMap) == 0);
+    cbor_static_assert(((int(MapType) << MajorTypeShift) & int(CborIteratorFlag_ContainerIsMap)) == int(CborIteratorFlag_ContainerIsMap));
+    cbor_static_assert(((int(ArrayType) << MajorTypeShift) & int(CborIteratorFlag_ContainerIsMap)) == 0);
     container->flags = shiftedMajorType & CborIteratorFlag_ContainerIsMap;
     if (CBOR_ENCODER_WRITER_CONTROL == 0)
         container->flags |= encoder->flags & CborIteratorFlag_WriterFunction;
