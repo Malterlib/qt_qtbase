@@ -728,7 +728,8 @@ qt_internal_extend_target(Core CONDITION UNIX
         thread/qthread_unix.cpp
 )
 if(APPLE)
-    set_source_files_properties(io/qfilesystemengine_unix.cpp PROPERTIES LANGUAGE OBJCXX)
+    # We can't vary the language by configuration
+    #set_source_files_properties(io/qfilesystemengine_unix.cpp PROPERTIES LANGUAGE OBJCXX)
     qt_internal_extend_target(Core CONDITION
         PUBLIC_LIBRARIES ${FWUniformTypeIdentifiers}
     )

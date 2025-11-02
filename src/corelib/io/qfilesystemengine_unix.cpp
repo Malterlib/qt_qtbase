@@ -45,9 +45,6 @@
 #if defined(Q_OS_DARWIN)
 # include <QtCore/private/qcore_mac_p.h>
 # include <CoreFoundation/CFBundle.h>
-# include <UniformTypeIdentifiers/UTType.h>
-# include <UniformTypeIdentifiers/UTCoreTypes.h>
-# include <Foundation/Foundation.h>
 # include <copyfile.h>
 #endif
 
@@ -112,70 +109,11 @@ enum {
 };
 
 #if defined(Q_OS_DARWIN)
-static inline bool hasResourcePropertyFlag(const QFileSystemMetaData &data,
+bool hasResourcePropertyFlag(const QFileSystemMetaData &data,
                                            const QFileSystemEntry &entry,
-                                           CFStringRef key)
-{
-    QCFString path = CFStringCreateWithFileSystemRepresentation(0,
-        entry.nativeFilePath().constData());
-    if (!path)
-        return false;
+                                           CFStringRef key);
 
-    QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle,
-        data.hasFlags(QFileSystemMetaData::DirectoryType));
-    if (!url)
-        return false;
-
-    CFBooleanRef value;
-    if (CFURLCopyResourcePropertyForKey(url, key, &value, NULL)) {
-        if (value == kCFBooleanTrue)
-            return true;
-    }
-
-    return false;
-}
-
-static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &entry)
-{
-    if (!data.isDirectory())
-        return false;
-
-    QFileInfo info(entry.filePath());
-    QString suffix = info.suffix();
-
-    if (suffix.length() > 0) {
-        // First step: is it a bundle?
-        const auto *utType = [UTType typeWithFilenameExtension:suffix.toNSString()];
-        if ([utType conformsToType:UTTypeBundle])
-            return true;
-
-        // Second step: check if an application knows the package type
-        QCFType<CFStringRef> path = entry.filePath().toCFString();
-        QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle, true);
-
-        UInt32 type, creator;
-        // Well created packages have the PkgInfo file
-        if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
-            return true;
-
-#ifdef Q_OS_MACOS
-        // Find if an application other than Finder claims to know how to handle the package
-        QCFType<CFURLRef> application = LSCopyDefaultApplicationURLForURL(url,
-            kLSRolesEditor | kLSRolesViewer, nullptr);
-
-        if (application) {
-            QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, application);
-            CFStringRef identifier = CFBundleGetIdentifier(bundle);
-            QString applicationId = QString::fromCFString(identifier);
-            if (applicationId != "com.apple.finder"_L1)
-                return true;
-        }
-#endif
-    }
-
-    // Third step: check if the directory has the package bit set
-    return hasResourcePropertyFlag(data, entry, kCFURLIsPackageKey);
-}
+bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &entry);
 #endif
 
 #ifdef Q_OS_VXWORKS
@@ -1090,7 +1028,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 #endif
 
     if (what & QFileSystemMetaData::HiddenAttribute
-            && !data.isHidden()) {        
+            && !data.isHidden()) {
         // reusing nativeFilePath from above instead of entry.fileName(), to
         // avoid memory allocation for the QString result.
         qsizetype lastSlash = nativeFilePath.size();
@@ -1853,6 +1791,10 @@ static constexpr QLatin1StringView nativeTempPath() noexcept
     return temp;
 }
 
+#if defined(Q_OS_DARWIN)
+QString getMacTemporaryDirectory();
+#endif
+
 QString QFileSystemEngine::tempPath()
 {
 #ifdef QT_UNIX_TEMP_PATH_OVERRIDE
@@ -1860,8 +1802,8 @@ QString QFileSystemEngine::tempPath()
 #else
     QString temp = qEnvironmentVariable("TMPDIR");
 #  if defined(Q_OS_DARWIN) && !defined(QT_BOOTSTRAPPED)
-    if (NSString *nsPath; temp.isEmpty() && (nsPath = NSTemporaryDirectory()))
-        temp = QString::fromCFString((CFStringRef)nsPath);
+    if (temp.isEmpty())
+        temp = getMacTemporaryDirectory();
 #  endif
     if (temp.isEmpty())
         return nativeTempPath();
