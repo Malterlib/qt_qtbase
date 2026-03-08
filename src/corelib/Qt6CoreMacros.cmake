@@ -1385,6 +1385,7 @@ function(qt6_extract_metatypes target)
 
             add_custom_target(${target}_automoc_json_extraction
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                    "${cmake_autogen_cache_file}"
                 BYPRODUCTS
                     ${type_list_file}
                     "${cmake_automoc_parser_timestamp}"
@@ -1416,6 +1417,7 @@ function(qt6_extract_metatypes target)
 
             add_custom_command(OUTPUT ${type_list_file}
                 DEPENDS ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+                    "${cmake_autogen_cache_file}"
                     ${cmake_autogen_timestamp_file}
                 BYPRODUCTS "${cmake_automoc_parser_timestamp}" "${type_list_file}"
                 COMMAND
