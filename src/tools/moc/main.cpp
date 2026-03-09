@@ -260,6 +260,9 @@ int runMoc(int argc, char **argv)
 #ifdef DMalterlibQtFeatures
     QCommandLineOption idsDependencyOption(QStringLiteral("d"), QStringLiteral("Output an ids dependency file with <name>."), QStringLiteral("name"));
     parser.addOption(idsDependencyOption);
+
+    QCommandLineOption idsDepFileOption(QStringLiteral("gcc-dep-file"), QStringLiteral("Output a gcc-format dependency file with <name>."), QStringLiteral("name"));
+    parser.addOption(idsDepFileOption);
 #endif
 
     QCommandLineOption pathPrefixOption(QStringLiteral("p"));
@@ -610,7 +613,10 @@ int runMoc(int argc, char **argv)
     if (parser.isSet(idsDependencyOption))
     {
         CStr OutputName = fg_MalterlibStrFromQt(parser.value(idsDependencyOption));
-        g_Tracker.f_WriteDependencyFile(OutputName);
+        CStr DepFileName;
+        if (parser.isSet(idsDepFileOption))
+            DepFileName = fg_MalterlibStrFromQt(parser.value(idsDepFileOption));
+        g_Tracker.f_WriteDependencyFile(OutputName, DepFileName);
     }
 #endif
 
