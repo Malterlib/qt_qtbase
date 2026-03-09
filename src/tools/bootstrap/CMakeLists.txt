@@ -158,6 +158,7 @@ endif()
 
 qt_internal_extend_target(Bootstrap CONDITION MACOS
     SOURCES
+        ../../corelib/io/qfilesystemengine_mac.mm
         ../../corelib/io/qstandardpaths_mac.mm
     LIBRARIES
         ${FWCoreServices}

@@ -15,6 +15,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_BOOTSTRAPPED)
 /*
     This implementation does not enable the "put back" option in Finder
     for the trashed object. The only way to get this is to use Finder automation,
@@ -60,6 +61,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     return false;
 #endif
 }
+#endif // !QT_BOOTSTRAPPED
 
 using namespace Qt::StringLiterals;
 
