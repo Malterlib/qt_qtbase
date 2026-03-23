@@ -168,15 +168,10 @@ static QFont::HintingPreference determineHinting(const QFontDef &fontDef)
 {
     QFont::HintingPreference hintingPreference = QFont::HintingPreference(fontDef.hintingPreference);
     if (hintingPreference == QFont::PreferDefaultHinting) {
-        if (!qFuzzyCompare(qApp->devicePixelRatio(), 1.0)) {
-            // Microsoft documentation recommends using asymmetric rendering for small fonts
-            // at pixel size 16 and less, and symmetric for larger fonts.
-            hintingPreference = fontDef.pixelSize > 16.0
-                                    ? QFont::PreferNoHinting
-                                    : QFont::PreferVerticalHinting;
-        } else {
-            hintingPreference = QFont::PreferFullHinting;
-        }
+        // Always use full hinting (GDI_CLASSIC) regardless of DPR.
+        // The DPR-based switching to CLEARTYPE_NATURAL/NATURAL_SYMMETRIC
+        // causes rendering artifacts at fractional DPI scales (125/150/175%).
+        hintingPreference = QFont::PreferFullHinting;
     }
 
     return hintingPreference;
@@ -193,6 +188,11 @@ DWRITE_RENDERING_MODE QWindowsFontEngineDirectWrite::hintingPreferenceToRenderin
         return DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL_SYMMETRIC;
     case QFont::PreferVerticalHinting:
         return DWRITE_RENDERING_MODE_CLEARTYPE_NATURAL;
+    case QFont::PreferFullHinting:
+        // Always use GDI_CLASSIC for full hinting regardless of pixel size.
+        // The pixel size > 16 check caused NATURAL_SYMMETRIC at fractional DPI
+        // scales (125/150/175%), producing rendering artifacts and clipping.
+        return DWRITE_RENDERING_MODE_GDI_CLASSIC;
     default:
         return fontDef.pixelSize > 16.0
                ? DWRITE_RENDERING_MODE_NATURAL_SYMMETRIC
