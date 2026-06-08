@@ -38,9 +38,9 @@
 #if QT_CONFIG(completer)
 #include <private/qcompleter_p.h>
 #endif
-#include "ui_qprintpropertieswidget.h"
-#include "ui_qprintsettingsoutput.h"
-#include "ui_qprintwidget.h"
+#include "dialogs/ui_qprintpropertieswidget.h"
+#include "dialogs/ui_qprintsettingsoutput.h"
+#include "dialogs/ui_qprintwidget.h"
 
 #if QT_CONFIG(cups)
 Q_DECLARE_METATYPE(const ppd_option_t *)

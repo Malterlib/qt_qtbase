@@ -22,7 +22,7 @@
 
 QT_REQUIRE_CONFIG(cupsjobwidget);
 
-#include <ui_qcupsjobwidget.h>
+#include <widgets/ui_qcupsjobwidget.h>
 
 QT_BEGIN_NAMESPACE
 
