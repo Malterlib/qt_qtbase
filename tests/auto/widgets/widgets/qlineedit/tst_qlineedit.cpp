@@ -270,6 +270,9 @@ private slots:
 
     void inputMethodQueryEnterKeyType();
 
+    void inputMethodQueryHidesPassword_data();
+    void inputMethodQueryHidesPassword();
+
     void inputMethodUpdate();
 
     void undoRedoAndEchoModes_data();
@@ -4411,6 +4414,54 @@ void tst_QLineEdit::inputMethodQueryImHints()
 
     QVariant value = testWidget->inputMethodQuery(Qt::ImHints);
     QCOMPARE(static_cast<Qt::InputMethodHints>(value.toInt()), hints);
+}
+
+void tst_QLineEdit::inputMethodQueryHidesPassword_data()
+{
+    QTest::addColumn<QLineEdit::EchoMode>("mode");
+    QTest::addColumn<bool>("hidden");
+
+    QTest::newRow("Normal") << QLineEdit::Normal << false;
+    QTest::newRow("Password") << QLineEdit::Password << true;
+    QTest::newRow("NoEcho") << QLineEdit::NoEcho << true;
+    QTest::newRow("PasswordEchoOnEdit") << QLineEdit::PasswordEchoOnEdit << true; // Not being edited
+}
+
+void tst_QLineEdit::inputMethodQueryHidesPassword()
+{
+    QFETCH(QLineEdit::EchoMode, mode);
+    QFETCH(bool, hidden);
+
+    QLineEdit edit;
+    edit.setEchoMode(mode);
+    edit.setText(QStringLiteral("secret"));
+    edit.setSelection(1, 3); // "ecr", cursor after it
+
+    const QString surrounding = edit.inputMethodQuery(Qt::ImSurroundingText).toString();
+    const QString before = edit.inputMethodQuery(Qt::ImTextBeforeCursor).toString();
+    const QString after = edit.inputMethodQuery(Qt::ImTextAfterCursor).toString();
+    const QString selection = edit.inputMethodQuery(Qt::ImCurrentSelection).toString();
+    QCOMPARE(edit.inputMethodQuery(Qt::ImCursorPosition).toInt(), 4);
+
+    if (!hidden) {
+        QCOMPARE(surrounding, QStringLiteral("secret"));
+        QCOMPARE(before, QStringLiteral("secr"));
+        QCOMPARE(after, QStringLiteral("et"));
+        QCOMPARE(selection, QStringLiteral("ecr"));
+        return;
+    }
+
+    // Input methods and platform services (such as the macOS Services menu) must not get the
+    // text, but positions must stay valid, so the text is replaced by characters of the same length
+    QVERIFY(selection.isEmpty());
+    QCOMPARE(surrounding.size(), 6);
+    QCOMPARE(before.size(), 4);
+    QCOMPARE(after.size(), 2);
+    const QChar mask = surrounding.at(0);
+    for (const QString &text : {surrounding, before, after}) {
+        QCOMPARE(text.count(mask), text.size());
+        QVERIFY(!text.contains(u's'));
+    }
 }
 
 void tst_QLineEdit::inputMethodQueryEnterKeyType()
