@@ -1848,6 +1848,13 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant argument) const
 {
     Q_D(const QLineEdit);
+    // Don't hand the text of a password to input methods or platform services (the macOS text
+    // input client and services menu copy it). Report password characters of the same length
+    // instead, so positions stay valid for dead key composition.
+    const bool hideText = d->control->echoMode() != Normal && !d->control->passwordEchoEditing();
+    const auto hiddenText = [d](int length) {
+        return QVariant(QString(qMax(length, 0), d->control->passwordCharacter()));
+    };
     switch(property) {
     case Qt::ImEnabled:
         return isEnabled() && !isReadOnly();
@@ -1864,8 +1871,12 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
             return QVariant(d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters));
         return QVariant(d->control->cursor()); }
     case Qt::ImSurroundingText:
+        if (hideText)
+            return hiddenText(d->control->end());
         return QVariant(d->control->surroundingText());
     case Qt::ImCurrentSelection:
+        if (hideText)
+            return QVariant(QString());
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
         return QVariant(maxLength());
@@ -1880,16 +1891,16 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
         return isReadOnly();
     case Qt::ImTextBeforeCursor: {
         const QPointF pt = argument.toPointF();
-        if (!pt.isNull())
-            return d->textBeforeCursor(d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters));
-        else
-            return d->textBeforeCursor(d->control->cursor()); }
+        const int pos = !pt.isNull() ? d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters) : d->control->cursor();
+        if (hideText)
+            return hiddenText(pos);
+        return d->textBeforeCursor(pos); }
     case Qt::ImTextAfterCursor: {
         const QPointF pt = argument.toPointF();
-        if (!pt.isNull())
-            return d->textAfterCursor(d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters));
-        else
-            return d->textAfterCursor(d->control->cursor()); }
+        const int pos = !pt.isNull() ? d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters) : d->control->cursor();
+        if (hideText)
+            return hiddenText(d->control->end() - pos);
+        return d->textAfterCursor(pos); }
     default:
         return QWidget::inputMethodQuery(property);
     }
