@@ -30,7 +30,14 @@ QT_BEGIN_NAMESPACE
 namespace q26 {
 
 // Like std::saturate_cast
-#ifdef __cpp_lib_saturation_arithmetic
+#if defined(__cpp_lib_saturation_arithmetic) && __cpp_lib_saturation_arithmetic >= 202603L
+// P4052R0 renamed std::saturate_cast to std::saturating_cast
+template <typename To, typename From>
+constexpr To saturate_cast(From x) noexcept
+{
+    return std::saturating_cast<To>(x);
+}
+#elif defined(__cpp_lib_saturation_arithmetic)
 using std::saturate_cast;
 #else
 template <typename To, typename From>
