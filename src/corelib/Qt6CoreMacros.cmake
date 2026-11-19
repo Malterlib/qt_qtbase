@@ -1883,6 +1883,14 @@ function(__qt_internal_propagate_object_files target objects)
     set(multi_args ${extra_conditions_args})
     cmake_parse_arguments(arg "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
+    # The Malterlib generator decides itself which of the targets that link the library get the
+    # objects, as for the native targets that depend on it, which conditions on the target that
+    # links can't be evaluated for, so they are passed on without those conditions.
+    if(CMAKE_EXTRA_GENERATOR STREQUAL "Malterlib")
+        target_link_libraries(${target} INTERFACE "${objects}")
+        return()
+    endif()
+
     # Collect additional conditions.
     foreach(arg IN LISTS extra_conditions_args)
         string(TOLOWER "${arg}" lcvar)
