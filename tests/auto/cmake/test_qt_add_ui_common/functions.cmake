@@ -1,9 +1,24 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+set(test_qt_add_ui_common_dir "${CMAKE_CURRENT_LIST_DIR}")
+
+# As qt6_add_ui names the folder: by the path of the file in the source tree of the project that
+# is built, uic_test unless SOURCE_DIR says otherwise, or by its absolute path when it's outside.
 function(generate_hash_folder target_name infile out_folder)
+    cmake_parse_arguments(PARSE_ARGV 3 arg "" "SOURCE_DIR" "")
+    if(NOT arg_SOURCE_DIR)
+        set(arg_SOURCE_DIR "${test_qt_add_ui_common_dir}/uic_test")
+    endif()
     get_filename_component(infile_abs "${infile}" ABSOLUTE)
-    string(SHA1 infile_hash "${target_name}${infile_abs}")
+    get_filename_component(source_dir_abs "${arg_SOURCE_DIR}" ABSOLUTE)
+    file(RELATIVE_PATH infile_in_source_tree "${source_dir_abs}" "${infile_abs}")
+    if(infile_in_source_tree MATCHES "^\\.\\./" OR IS_ABSOLUTE "${infile_in_source_tree}")
+        set(infile_for_hash "${infile_abs}")
+    else()
+        set(infile_for_hash "<source>/${infile_in_source_tree}")
+    endif()
+    string(SHA1 infile_hash "${target_name}/${infile_for_hash}")
     string(SUBSTRING "${infile_hash}" 0 6 short_hash)
     set(${out_folder} "${short_hash}" PARENT_SCOPE)
 endfunction()

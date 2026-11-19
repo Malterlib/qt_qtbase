@@ -168,7 +168,21 @@ function(qt6_add_ui target)
     foreach(source_file ${sources})
         get_filename_component(outfile "${source_file}" NAME_WE)
         get_filename_component(infile "${source_file}" ABSOLUTE)
-        string(SHA1 infile_hash "${target}${infile}")
+        # The folder of a file in the build or source tree doesn't depend on where the tree is,
+        # so that the generated build is the same wherever it is generated. A target name has no
+        # slash, which separates it from the path.
+        file(RELATIVE_PATH infile_in_build_tree "${CMAKE_BINARY_DIR}" "${infile}")
+        file(RELATIVE_PATH infile_in_source_tree "${CMAKE_SOURCE_DIR}" "${infile}")
+        if(NOT infile_in_build_tree MATCHES "^\\.\\./"
+                AND NOT IS_ABSOLUTE "${infile_in_build_tree}")
+            set(infile_for_hash "<build>/${infile_in_build_tree}")
+        elseif(NOT infile_in_source_tree MATCHES "^\\.\\./"
+                AND NOT IS_ABSOLUTE "${infile_in_source_tree}")
+            set(infile_for_hash "<source>/${infile_in_source_tree}")
+        else()
+            set(infile_for_hash "${infile}")
+        endif()
+        string(SHA1 infile_hash "${target}/${infile_for_hash}")
         string(SUBSTRING "${infile_hash}" 0 6 short_hash)
         set(file_ui_folder "${CMAKE_CURRENT_BINARY_DIR}/.qt/${short_hash}")
         target_include_directories(${target} SYSTEM PRIVATE

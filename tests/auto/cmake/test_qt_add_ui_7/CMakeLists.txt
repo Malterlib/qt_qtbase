@@ -47,7 +47,8 @@ foreach(generator IN ITEMS ${generators})
     generate_hash_folder(
         "example"
         "${ui_file}"
-        hash_folder)
+        hash_folder
+        SOURCE_DIR "${test_source_dir}")
     incremental_build_test(
         TEST_NAME UicIncBuild_sameFileDiffFolder
         SOURCE_DIR "${test_source_dir}"
